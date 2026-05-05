@@ -8,30 +8,35 @@ import {
   Shield,
   Zap,
   TrendingUp,
-  Star
+  Star,
+  Menu,
+  X,
+  Quote
 } from 'lucide-react';
-import { motion, type Variants } from 'motion/react';
+import { motion, type Variants, AnimatePresence } from 'motion/react';
+import { useState, useEffect } from 'react';
 
-// লোগো কম্পোনেন্ট
+// --- Components ---
+
 const Logo = () => (
   <div className="flex items-center gap-3 group cursor-pointer">
-    <div className="relative flex items-center justify-center w-11 h-11 overflow-hidden rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/20 group-hover:bg-indigo-700 transition-all duration-300">
+    <div className="relative flex items-center justify-center w-10 h-10 md:w-11 md:h-11 overflow-hidden rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/20 group-hover:bg-indigo-700 transition-all duration-300">
       <motion.div
         initial={{ rotate: -15, scale: 0.8 }}
         animate={{ rotate: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <BookOpen className="w-6 h-6 text-white" />
+        <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-white" />
       </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     </div>
-    <span className="text-2xl font-black tracking-tight text-slate-900 font-sans">
+    <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900 font-sans">
       Boi<span className="text-indigo-600">Net</span>
     </span>
   </div>
 );
 
-// অ্যানিমেশন ভেরিয়েন্টস (Explicitly Typed)
+// --- Animation Variants ---
+
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
@@ -57,128 +62,218 @@ const staggerContainer: Variants = {
 };
 
 export default function App() {
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-      {/* স্টিকি নেভিগেশন */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = [
+    { name: 'Home', active: true },
+    { name: 'Books', active: false },
+    { name: 'About', active: false }
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FDFCFB] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
+
+      {/* Sticky Navigation */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 border-b border-slate-200/50 h-16 md:h-20 shadow-sm' : 'bg-transparent h-20 md:h-24'
+        }`}>
+        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <Logo />
 
-          <div className="hidden md:flex items-center gap-12 font-bold text-sm tracking-tight">
-            {[
-              { name: 'Home', active: true },
-              { name: 'Books', active: false },
-              { name: 'About', active: false }
-            ].map((item) => (
+          <div className="hidden md:flex items-center gap-12 font-bold text-sm tracking-tight text-slate-600">
+            {navLinks.map((item) => (
               <a
                 key={item.name}
                 href="#"
-                className={`transition-all relative group ${item.active ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-600'}`}
+                className={`transition-all relative group py-1 ${item.active ? 'text-indigo-600' : 'hover:text-indigo-600'}`}
               >
                 {item.name}
-                {item.active && <span className="absolute -bottom-2 left-0 w-full h-1 bg-indigo-600 rounded-full" />}
+                <span className={`absolute -bottom-1 left-0 h-0.5 bg-indigo-600 rounded-full transition-all duration-300 ${item.active ? 'w-full' : 'w-0 group-hover:w-full'}`} />
               </a>
             ))}
           </div>
 
-          <div className="flex items-center gap-5">
-            <button className="text-sm font-black text-slate-600 hover:text-indigo-600 transition-colors pointer-events-auto">
-              Login
-            </button>
-            <button className="bg-slate-900 text-white px-7 py-3 rounded-2xl text-sm font-black hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-900/10 active:scale-95">
-              Get Started
+          <div className="flex items-center gap-4 md:gap-8">
+            <div className="hidden sm:flex items-center gap-4 md:gap-8">
+              <button className="text-sm font-black text-slate-600 hover:text-indigo-600 px-2 transition-all">
+                Login
+              </button>
+              <button className="bg-slate-900 text-white px-7 py-3.5 rounded-2xl text-sm font-black hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-900/10 active:scale-95">
+                Get Started
+              </button>
+            </div>
+
+            {/* Hamburger Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 text-slate-900 hover:bg-slate-100 rounded-xl transition-colors relative z-50"
+            >
+              <AnimatePresence mode="wait">
+                {isMenuOpen ? (
+                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                    <X className="w-6 h-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                    <Menu className="w-6 h-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay - Solid Background */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+              className="fixed inset-0 bg-[#FDFCFB] z-40 flex flex-col pt-28 px-10 md:hidden"
+            >
+              <div className="space-y-8">
+                {navLinks.map((item, i) => (
+                  <motion.a
+                    key={item.name}
+                    href="#"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 + 0.2 }}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`text-5xl font-black block tracking-tighter ${item.active ? 'text-indigo-600' : 'text-slate-900'}`}
+                  >
+                    {item.name}
+                  </motion.a>
+                ))}
+              </div>
+              <div className="mt-auto pb-16 space-y-4">
+                <button className="w-full py-5 text-slate-900 font-black text-2xl border-2 border-slate-100 rounded-[2rem] active:scale-95 transition-transform">
+                  Login
+                </button>
+                <button className="w-full py-5 bg-indigo-600 text-white font-black text-2xl rounded-[2rem] shadow-2xl shadow-indigo-200 active:scale-95 transition-transform">
+                  Get Started
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
-      <main className="pt-20">
-        {/* হিরো সেকশন */}
-        <section className="relative pt-24 pb-32 px-6 overflow-hidden">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_45%_at_50%_50%,rgba(99,102,241,0.06)_0,rgba(255,255,255,0)_100%)]" />
+      <main>
+        {/* --- Hero Section --- */}
+        <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 px-6 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-[800px] -z-10 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.06)_0,rgba(255,255,255,0)_70%)]" />
 
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
-              className="space-y-12"
+              className="space-y-10 md:space-y-14"
             >
-              <motion.div custom={0} variants={fadeInUp} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-indigo-700 text-[11px] font-black uppercase tracking-[0.2em]">
+              <motion.div custom={0} variants={fadeInUp} className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white border border-slate-200 shadow-sm text-indigo-700 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em]">
                 <Sparkles className="w-4 h-4" />
                 The Future of Reading
               </motion.div>
 
-              <motion.h1 custom={1} variants={fadeInUp} className="text-6xl md:text-[5.2rem] font-bold tracking-tight text-slate-900 leading-[0.95]">
+              <motion.h1 custom={1} variants={fadeInUp} className="text-5xl md:text-8xl font-black tracking-tight text-slate-900 leading-[0.9] md:leading-[0.85]">
                 Discover Your Next <br />
-                <span className="text-indigo-600 italic font-serif">Favorite Book</span>
+                <span className="text-indigo-600 italic font-serif font-bold">Favorite Book</span>
               </motion.h1>
 
-              <motion.div custom={2} variants={fadeInUp} className="max-w-xl space-y-8">
-                <p className="text-xl md:text-2xl text-slate-500 leading-relaxed font-medium">
-                  BoiNet-এ আপনাকে স্বাগতম! আপনার প্রিয় বইয়ের বিশাল সংগ্রহশালা এখন আপনার হাতের মুঠোয়। আজই আপনার পছন্দের বইটি খুঁজে বের করুন।
+              <motion.div custom={2} variants={fadeInUp} className="max-w-2xl space-y-10">
+                <p className="text-xl md:text-2xl text-slate-500 leading-relaxed font-medium tracking-tight">
+                  Welcome to BoiNet! Your massive collection of favorite books is now at your fingertips. Discover your chosen stories today.
                 </p>
                 <div className="flex flex-wrap gap-5">
-                  <button className="bg-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-slate-900 transition-all shadow-2xl shadow-indigo-600/30 flex items-center gap-3 group">
-                    Browse Collection <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <button className="bg-indigo-600 text-white px-10 md:px-12 py-5 md:py-6 rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl hover:bg-slate-900 transition-all shadow-2xl shadow-indigo-600/30 flex items-center gap-4 group active:scale-95">
+                    Browse Collection <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                   </button>
-                  <button className="bg-white text-slate-900 border-2 border-slate-100 px-10 py-5 rounded-2xl font-black text-lg hover:border-indigo-600 transition-all">
+                  <button className="bg-white text-slate-900 border-2 border-slate-100 px-10 md:px-12 py-5 md:py-6 rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl hover:border-indigo-600 transition-all active:scale-95">
                     Learn More
                   </button>
                 </div>
               </motion.div>
 
               <motion.div custom={3} variants={fadeInUp} className="pt-4 flex items-center gap-8">
-                <div className="flex -space-x-3">
+                <div className="flex -space-x-4">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-slate-200 overflow-hidden shadow-md">
-                      <img src={`https://i.pravatar.cc/100?u=${i}`} alt="User" referrerPolicy="no-referrer" />
+                    <div key={i} className="w-12 h-12 md:w-14 md:h-14 rounded-full border-[6px] border-white bg-slate-200 overflow-hidden shadow-lg">
+                      <img src={`https://i.pravatar.cc/100?u=boi${i}`} alt="User" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>
                 <div>
-                  <p className="text-slate-900 font-black text-sm tracking-tight">10,000+ Active Readers</p>
-                  <div className="flex text-indigo-500 gap-0.5 mt-0.5">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
+                  <p className="text-slate-900 font-black text-sm md:text-base tracking-tight">10,000+ Active Readers</p>
+                  <div className="flex text-indigo-500 gap-0.5 mt-1">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
                   </div>
                 </div>
               </motion.div>
             </motion.div>
 
-            {/* হিরো ইমেজ সেকশন */}
+            {/* --- Hero Image --- */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, ease: "easeOut" }}
+              transition={{ duration: 1.2, ease: [0.21, 1.02, 0.47, 0.98] }}
               className="relative hidden lg:block"
             >
-              <div className="relative z-10 rounded-[64px] bg-slate-100 aspect-[4/5] overflow-hidden shadow-2xl group border-[12px] border-white">
-                <img
-                  src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=1000"
-                  alt="Library"
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-60" />
-                <div className="absolute bottom-10 left-10 p-8 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/20 text-white max-w-xs">
-                  <TrendingUp className="w-8 h-8 mb-4 text-indigo-400" />
-                  <p className="font-bold text-xl leading-tight">Trending: "The Art of Knowledge Curation"</p>
+              <div className="relative z-10 rounded-[5rem] bg-white p-4 shadow-[0_80px_160px_-40px_rgba(0,0,0,0.15)] border border-slate-100">
+                <div className="relative aspect-[3/4] rounded-[4.2rem] overflow-hidden group">
+                  <img
+                    src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=1000"
+                    alt="Library Atmosphere"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-60" />
+
+                  {/* Floating Content - Improved Glassmorphism */}
+                  <div className="absolute bottom-10 left-10 right-10 p-10 rounded-[3rem] bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-2xl">
+                    <TrendingUp className="w-10 h-10 mb-5 text-indigo-400" />
+                    <p className="font-bold text-2xl md:text-3xl leading-tight">Trending: "The Art of Knowledge Curation"</p>
+                  </div>
                 </div>
               </div>
-              <div className="absolute -top-10 -right-10 w-48 h-48 bg-indigo-500/10 blur-[100px] -z-10 animate-pulse" />
-              <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-500/10 blur-[100px] -z-10 animate-pulse delay-700" />
+              <div className="absolute -top-12 -right-12 w-64 h-64 bg-indigo-500/10 blur-[120px] -z-10 animate-pulse" />
+              <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-blue-500/10 blur-[120px] -z-10 animate-pulse delay-1000" />
             </motion.div>
           </div>
         </section>
 
-        {/* ফিচার সেকশন (বেন্টো গ্রিড স্টাইল) */}
-        <section className="py-24 px-6 bg-slate-50">
+        {/* --- Featured Stats --- */}
+        <section className="py-24 border-y border-slate-100 bg-[#FDFCFB]">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+            {[
+              { label: "Volumes", val: "2.4M+" },
+              { label: "Community", val: "850k" },
+              { label: "Authors", val: "15k+" },
+              { label: "Daily Reads", val: "45k" }
+            ].map((s, i) => (
+              <div key={i} className="space-y-2">
+                <div className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter">{s.val}</div>
+                <div className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-slate-400">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* --- Features Grid --- */}
+        <section className="py-24 px-6 bg-[#F8FAFC]">
           <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
             {[
-              { icon: Library, title: "Massive Collection", desc: "Access millions of books across all genres and languages.", color: "bg-indigo-600" },
-              { icon: BookMarked, title: "Smart Annotations", desc: "Shared notes and insights that live across all your devices.", color: "bg-blue-600" },
-              { icon: Shield, title: "Private & Secure", desc: "Your reading habits are yours alone. Encrypted and safe.", color: "bg-slate-900" }
+              { icon: Library, title: "Massive Collection", desc: "Access millions of books across all genres and languages at any time.", color: "bg-indigo-600" },
+              { icon: BookMarked, title: "Smart Annotations", desc: "Shared notes and insights that sync seamlessly across all your devices.", color: "bg-blue-600" },
+              { icon: Shield, title: "Private & Secure", desc: "Your reading habits are strictly confidential and fully encrypted.", color: "bg-slate-900" }
             ].map((feature, i) => (
               <motion.div
                 key={i}
@@ -186,90 +281,132 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white p-10 rounded-[40px] border border-slate-100 hover:border-indigo-200 transition-all hover:shadow-2xl hover:shadow-indigo-500/5 group"
+                className="bg-white p-12 rounded-[40px] border border-slate-100 hover:border-indigo-200 transition-all hover:shadow-2xl hover:shadow-indigo-500/5 group"
               >
-                <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-8 text-white shadow-lg`}>
-                  <feature.icon className="w-7 h-7" />
+                <div className={`w-16 h-16 rounded-2xl ${feature.color} flex items-center justify-center mb-10 text-white shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                  <feature.icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
-                <p className="text-slate-500 leading-relaxed font-medium">{feature.desc}</p>
+                <h3 className="text-2xl md:text-3xl font-black mb-6 text-slate-900 leading-tight">{feature.title}</h3>
+                <p className="text-slate-500 leading-relaxed font-bold tracking-tight text-lg">{feature.desc}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* কল টু অ্যাকশন */}
-        <section className="py-40 px-6">
-          <div className="max-w-6xl mx-auto rounded-[56px] bg-indigo-600 py-24 px-12 relative overflow-hidden text-center space-y-10 shadow-2xl">
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <Zap className="absolute top-10 left-10 w-40 h-40 -rotate-12" />
-              <Globe className="absolute bottom-10 right-10 w-40 h-40 rotate-12" />
+        {/* --- Testimonials --- */}
+        <section className="py-32 px-6 overflow-hidden">
+          <div className="max-w-7xl mx-auto space-y-20">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 text-indigo-600 font-black text-xs uppercase tracking-[0.3em]">
+                  <Quote className="w-4 h-4" />
+                  Reader Voices
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
+                  Wisdom Shared, <br /><span className="text-indigo-600 italic font-serif">Community Driven.</span>
+                </h2>
+              </div>
             </div>
 
-            <h2 className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-tight relative z-10">
-              Ready to Start Your <br />
-              <span className="italic text-indigo-200 font-serif">Literary Journey?</span>
+            <div className="grid md:grid-cols-2 gap-8">
+              {[
+                { name: "Sarah Jameson", role: "PhD Researcher", text: "BoiNet changed how I organize my research. The annotations tool is a masterpiece. Highly recommend for any academic." },
+                { name: "David Chen", role: "Creative Director", text: "The collection of art books is unmatched. I find inspiration every morning before starting my design work." }
+              ].map((t, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -10 }}
+                  className="p-12 rounded-[48px] bg-slate-900 text-white space-y-8 relative overflow-hidden group shadow-2xl"
+                >
+                  <Quote className="w-16 h-16 text-indigo-500/10 absolute top-10 right-10 group-hover:scale-125 transition-transform duration-1000" />
+                  <p className="text-xl md:text-3xl font-medium leading-tight relative z-10 italic">"{t.text}"</p>
+                  <div className="flex items-center gap-5 relative z-10 pt-4">
+                    <div className="w-16 h-16 rounded-3xl bg-indigo-600 flex items-center justify-center font-black text-xl shadow-2xl">
+                      {t.name[0]}
+                    </div>
+                    <div>
+                      <p className="font-black text-2xl leading-none tracking-tight">{t.name}</p>
+                      <p className="text-indigo-400 text-sm font-black uppercase tracking-[0.2em] mt-2">{t.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* --- CTA Section --- */}
+        <section className="py-40 px-6">
+          <div className="max-w-6xl mx-auto rounded-[6rem] bg-indigo-600 py-32 px-12 relative overflow-hidden text-center space-y-12 shadow-[0_80px_160px_-40px_rgba(79,70,229,0.4)]">
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <Zap className="absolute top-10 left-10 w-48 h-48 -rotate-12" />
+              <Globe className="absolute bottom-10 right-10 w-48 h-48 rotate-12" />
+            </div>
+
+            <h2 className="text-6xl md:text-[8rem] font-black text-white tracking-tighter leading-[0.85] relative z-10">
+              Your Journey <br />
+              <span className="italic text-indigo-100 font-serif">Starts Here.</span>
             </h2>
-            <p className="text-indigo-100 text-lg md:text-xl font-medium max-w-2xl mx-auto relative z-10">
+            <p className="text-indigo-100 text-xl md:text-3xl font-medium max-w-3xl mx-auto relative z-10 leading-tight">
               Join thousands of readers and discover the power of curated knowledge at your fingertips.
             </p>
-            <div className="relative z-10 flex justify-center pt-6">
-              <button className="bg-white text-indigo-600 px-12 py-5 rounded-2xl font-black text-xl hover:bg-slate-900 hover:text-white transition-all shadow-2xl active:scale-95">
-                Join Now for Free
+            <div className="relative z-10 flex justify-center pt-10">
+              <button className="bg-white text-indigo-600 px-16 py-7 rounded-[2.5rem] font-black text-2xl hover:bg-slate-900 hover:text-white transition-all shadow-2xl active:scale-95 duration-500 uppercase tracking-widest">
+                Join Now Free
               </button>
             </div>
           </div>
         </section>
       </main>
 
-      {/* মডার্ন ফুটার */}
-      <footer className="bg-white pt-32 pb-16 px-6 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto space-y-24">
+      {/* --- Reverted Footer --- */}
+      <footer className="bg-white pt-40 pb-20 px-6 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto space-y-32">
           <div className="flex flex-col md:flex-row justify-between items-start gap-16">
-            <div className="space-y-8 max-w-sm">
+            <div className="space-y-10 max-w-sm">
               <Logo />
-              <p className="text-slate-500 text-xl font-light leading-relaxed">
+              <p className="text-slate-500 text-2xl font-light leading-snug tracking-tight">
                 Empowering readers through a seamless digital experience. Connecting you with the world's wisdom.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-16">
-              <div className="space-y-6">
-                <p className="text-slate-900 uppercase text-xs tracking-widest font-black">Explore</p>
-                <ul className="space-y-4 font-bold text-slate-500">
-                  <li><a href="#" className="hover:text-indigo-600">Library</a></li>
-                  <li><a href="#" className="hover:text-indigo-600">Authors</a></li>
-                  <li><a href="#" className="hover:text-indigo-600">Community</a></li>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-20">
+              <div className="space-y-10">
+                <p className="text-slate-900 uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Explore</p>
+                <ul className="space-y-6 font-bold text-slate-500 text-xl">
+                  <li><a href="#" className="hover:text-indigo-600 transition-colors">Library</a></li>
+                  <li><a href="#" className="hover:text-indigo-600 transition-colors">Authors</a></li>
+                  <li><a href="#" className="hover:text-indigo-600 transition-colors">Community</a></li>
                 </ul>
               </div>
-              <div className="space-y-6">
-                <p className="text-slate-900 uppercase text-xs tracking-widest font-black">Company</p>
-                <ul className="space-y-4 font-bold text-slate-500">
-                  <li><a href="#" className="hover:text-indigo-600">About Us</a></li>
-                  <li><a href="#" className="hover:text-indigo-600">Privacy</a></li>
-                  <li><a href="#" className="hover:text-indigo-600">Contact</a></li>
+              <div className="space-y-10">
+                <p className="text-slate-900 uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Company</p>
+                <ul className="space-y-6 font-bold text-slate-500 text-xl">
+                  <li><a href="#" className="hover:text-indigo-600 transition-colors">About Us</a></li>
+                  <li><a href="#" className="hover:text-indigo-600 transition-colors">Privacy</a></li>
+                  <li><a href="#" className="hover:text-indigo-600 transition-colors">Contact</a></li>
                 </ul>
               </div>
-              <div className="space-y-6 col-span-2 lg:col-span-1">
-                <p className="text-slate-900 uppercase text-xs tracking-widest font-black">Newsletter</p>
-                <div className="flex gap-2">
-                  <input type="email" placeholder="Email" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600 transition-all w-full" />
-                  <button className="bg-indigo-600 text-white p-3 rounded-xl hover:bg-slate-900 transition-colors">
-                    <ArrowRight className="w-5 h-5" />
+              <div className="space-y-10 col-span-2 lg:col-span-1">
+                <p className="text-slate-900 uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Newsletter</p>
+                <div className="flex gap-3 mt-6">
+                  <input type="email" placeholder="Email" className="bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-indigo-600 transition-all w-full font-bold" />
+                  <button className="bg-indigo-600 text-white p-5 rounded-2xl hover:bg-slate-900 transition-all shadow-xl">
+                    <ArrowRight className="w-6 h-6" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="pt-20 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-12">
             <p className="text-slate-400 font-bold text-sm tracking-tight text-center">
               &copy; {new Date().getFullYear()} BoiNet. Built with <span className="text-slate-900">ASP.NET Core</span> & <span className="text-slate-900">React</span>.
             </p>
-            <div className="flex gap-8 grayscale opacity-40">
-              <Globe className="w-5 h-5" />
-              <Zap className="w-5 h-5" />
-              <Shield className="w-5 h-5" />
+            <div className="flex gap-12 grayscale opacity-40 hover:opacity-100 transition-opacity">
+              <Globe className="w-6 h-6" />
+              <Zap className="w-6 h-6" />
+              <Shield className="w-6 h-6" />
             </div>
           </div>
         </div>
