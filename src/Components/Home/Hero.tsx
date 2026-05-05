@@ -28,7 +28,7 @@ const staggerContainer: Variants = {
 export default function Hero() {
     return (
         <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 px-6 overflow-hidden">
-            <div className="absolute inset-x-0 top-0 h-[800px] -z-10 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.06)_0,rgba(255,255,255,0)_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.1)_0,rgba(15,23,42,0)_70%)]" />
+            <div className="absolute inset-x-0 top-0 h-200 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.06)_0,rgba(255,255,255,0)_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.1)_0,rgba(15,23,42,0)_70%)]" />
 
             <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
                 <motion.div
@@ -52,10 +52,10 @@ export default function Hero() {
                             Welcome to BoiNet! Your massive collection of favorite books is now at your fingertips. Discover your chosen stories today.
                         </p>
                         <div className="flex flex-wrap gap-5">
-                            <button className="bg-indigo-600 text-white px-10 md:px-12 py-5 md:py-6 rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl hover:bg-slate-900 dark:hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-600/30 flex items-center gap-4 group active:scale-95">
+                            <button className="bg-indigo-600 text-white px-10 md:px-12 py-5 md:py-6 rounded-2xl md:rounded-4xl font-black text-lg md:text-xl hover:bg-slate-900 dark:hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-600/30 flex items-center gap-4 group active:scale-95">
                                 Browse Collection <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <button className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-100 dark:border-slate-800 px-10 md:px-12 py-5 md:py-6 rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl hover:border-indigo-600 dark:hover:border-indigo-500 transition-all active:scale-95">
+                            <button className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-100 dark:border-slate-800 px-10 md:px-12 py-5 md:py-6 rounded-2xl md:rounded-4xl font-black text-lg md:text-xl hover:border-indigo-600 dark:hover:border-indigo-500 transition-all active:scale-95">
                                 Learn More
                             </button>
                         </div>
@@ -86,14 +86,14 @@ export default function Hero() {
                     className="relative hidden lg:block"
                 >
                     <div className="relative z-10 rounded-[5rem] bg-white dark:bg-slate-900 p-4 shadow-[0_80px_160px_-40px_rgba(0,0,0,0.15)] dark:shadow-none border border-slate-100 dark:border-slate-800">
-                        <div className="relative aspect-[3/4] rounded-[4.2rem] overflow-hidden group">
+                        <div className="relative aspect-3/4 rounded-[4.2rem] overflow-hidden group">
                             <img
                                 src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=1000"
                                 alt="Library Atmosphere"
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                 referrerPolicy="no-referrer"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 dark:from-slate-950/80 via-transparent to-transparent opacity-60" />
+                            <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 dark:from-slate-950/80 via-transparent to-transparent opacity-60" />
 
                             {/* Floating Content - Improved Glassmorphism */}
                             <div className="absolute bottom-10 left-10 right-10 p-10 rounded-[3rem] bg-white/10 dark:bg-slate-900/20 backdrop-blur-md border border-white/20 dark:border-slate-700/30 text-white shadow-2xl">
