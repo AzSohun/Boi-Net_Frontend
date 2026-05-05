@@ -13,7 +13,7 @@ export default function Footer() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-20">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-20">
                         <div className="space-y-10">
                             <p className="text-slate-900 dark:text-white uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Explore</p>
                             <ul className="space-y-6 font-bold text-slate-500 dark:text-slate-400 text-xl">
@@ -30,13 +30,20 @@ export default function Footer() {
                                 <li><a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a></li>
                             </ul>
                         </div>
-                        <div className="space-y-10 col-span-2 lg:col-span-1">
+                        <div className="space-y-10 col-span-2">
                             <p className="text-slate-900 dark:text-white uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Newsletter</p>
-                            <div className="flex gap-3 mt-6">
-                                <input type="email" placeholder="Email" className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-indigo-600 transition-all w-full font-bold dark:text-white" />
-                                <button className="bg-indigo-600 text-white p-5 rounded-2xl hover:bg-slate-900 dark:hover:bg-indigo-700 transition-all shadow-xl">
-                                    <ArrowRight className="w-6 h-6" />
-                                </button>
+                            <div className="space-y-6">
+                                <form className="relative max-w-xl group" onSubmit={(e) => e.preventDefault()}>
+                                    <input
+                                        type="email"
+                                        placeholder="Join our mailing list"
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-full px-8 py-6 text-xl font-bold dark:text-white focus:outline-none focus:border-indigo-600 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 pr-36"
+                                    />
+                                    <button className="absolute right-2 top-2 bottom-2 bg-indigo-600 text-white px-8 rounded-full hover:bg-slate-900 dark:hover:bg-indigo-700 transition-all shadow-xl flex items-center justify-center group/btn active:scale-95 leading-none font-black text-sm uppercase tracking-widest whitespace-nowrap">
+                                        Join <ArrowRight className="w-5 h-5 ml-3 group-hover/btn:translate-x-1 transition-transform" />
+                                    </button>
+                                </form>
+                                <p className="text-slate-400 dark:text-slate-500 text-lg font-medium tracking-tight">Weekly digests of the best stories and curated insights.</p>
                             </div>
                         </div>
                     </div>
