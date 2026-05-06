@@ -17,7 +17,7 @@ export default function BookCard({ book, index }: BookCardProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (index % 3) * 0.1, duration: 0.6 }}
-            onClick={() => navigate(`/books/${book.id}`)}
+            onClick={() => navigate(`/book/${book.id}`)}
             className="group cursor-pointer"
         >
             <div className="relative aspect-3/4 rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-xl group-hover:shadow-indigo-500/10 transition-all duration-700 border border-slate-100 dark:border-slate-800">

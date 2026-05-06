@@ -4,6 +4,7 @@ import Home from './Pages/Home';
 import Navbar from './Components/shared/Navbar';
 import Footer from './Components/shared/Footer';
 import Book from './Pages/Book';
+import BookDetails from './Pages/BookDetails';
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -58,6 +59,7 @@ export default function App() {
           <Route index element={<Home />} />
           {/* Add other routes here, e.g. <Route path="books" element={<Books />} /> */}
           <Route path="books" element={<Book />} />
+          <Route path="book/:id" element={<BookDetails />} />
         </Route>
       </Routes>
     </BrowserRouter>
