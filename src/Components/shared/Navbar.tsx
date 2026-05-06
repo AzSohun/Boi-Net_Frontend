@@ -105,7 +105,8 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
         { name: 'Home', path: '/' },
         { name: 'Books', path: '/books' },
         { name: 'Authors', path: '/authors' },
-        { name: 'About', path: '/about' }
+        { name: 'About', path: '/about' },
+        { name: 'Community', path: "/community" }
     ];
 
     return (

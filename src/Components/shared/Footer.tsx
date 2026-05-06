@@ -20,7 +20,7 @@ export default function Footer() {
                             <ul className="space-y-6 font-bold text-slate-500 dark:text-slate-400 text-xl">
                                 <li><Link to="/books" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Library</Link></li>
                                 <li><Link to="/authors" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Authors</Link></li>
-                                <li><a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Community</a></li>
+                                <li><Link to="/community" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Community</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-10">

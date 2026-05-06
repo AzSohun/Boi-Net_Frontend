@@ -10,6 +10,7 @@ import Privacy from './Pages/Privacy';
 import Contact from './Pages/Contact';
 import Authors from './Pages/Authors';
 import ScrollToTop from './Components/shared/ScrollToTop';
+import Community from './Pages/Community';
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="privacy" element={<Privacy />} />
           <Route path="contact" element={<Contact />} />
           <Route path="authors" element={<Authors />} />
+          <Route path="community" element={<Community />} />
         </Route>
       </Routes>
     </BrowserRouter>
