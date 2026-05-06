@@ -27,7 +27,7 @@ export default function Footer() {
                             <ul className="space-y-6 font-bold text-slate-500 dark:text-slate-400 text-xl">
                                 <li><a href="/about" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About Us</a></li>
                                 <li><a href="/privacy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy</a></li>
-                                <li><a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a></li>
+                                <li><a href="/contact" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a></li>
                             </ul>
                         </div>
                         <div className="space-y-10 col-span-2">

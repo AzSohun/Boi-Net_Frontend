@@ -7,6 +7,7 @@ import Book from './Pages/Book';
 import BookDetails from './Pages/BookDetails';
 import About from './Pages/About';
 import Privacy from './Pages/Privacy';
+import Contact from './Pages/Contact';
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -62,8 +63,9 @@ export default function App() {
           {/* Add other routes here, e.g. <Route path="books" element={<Books />} /> */}
           <Route path="books" element={<Book />} />
           <Route path="book/:id" element={<BookDetails />} />
-          <Route path="about" element={<About></About>} />
-          <Route path="privacy" element={<Privacy></Privacy>} />
+          <Route path="about" element={<About />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="contact" element={<Contact />} />
         </Route>
       </Routes>
     </BrowserRouter>
