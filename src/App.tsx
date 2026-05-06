@@ -11,6 +11,8 @@ import Contact from './Pages/Contact';
 import Authors from './Pages/Authors';
 import ScrollToTop from './Components/shared/ScrollToTop';
 import Community from './Pages/Community';
+import Login from './Pages/Login';
+import Register from './Pages/Register';
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -69,9 +71,12 @@ export default function App() {
           <Route path="book/:id" element={<BookDetails />} />
           <Route path="about" element={<About />} />
           <Route path="privacy" element={<Privacy />} />
+          <Route path="community" element={<Community />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
           <Route path="contact" element={<Contact />} />
           <Route path="authors" element={<Authors />} />
-          <Route path="community" element={<Community />} />
+
         </Route>
       </Routes>
     </BrowserRouter>
