@@ -1,5 +1,6 @@
 import { Star, BookOpen, Calendar, Globe, Hash } from 'lucide-react';
 import type { Book } from '../../types/book';
+import DetailItem from './DetailItem';
 
 
 interface BookInfoProps {
