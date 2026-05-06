@@ -8,6 +8,8 @@ import BookDetails from './Pages/BookDetails';
 import About from './Pages/About';
 import Privacy from './Pages/Privacy';
 import Contact from './Pages/Contact';
+import Authors from './Pages/Authors';
+import ScrollToTop from './Components/shared/ScrollToTop';
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -57,6 +59,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout theme={theme} setTheme={setTheme} />}>
           <Route index element={<Home />} />
@@ -66,6 +69,7 @@ export default function App() {
           <Route path="about" element={<About />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="authors" element={<Authors />} />
         </Route>
       </Routes>
     </BrowserRouter>

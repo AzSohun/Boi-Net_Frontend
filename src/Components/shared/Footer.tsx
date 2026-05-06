@@ -1,5 +1,6 @@
 import { Globe, Zap, Shield, ArrowRight } from 'lucide-react';
 import { Logo } from './Navbar';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
     return (
@@ -17,17 +18,17 @@ export default function Footer() {
                         <div className="space-y-10">
                             <p className="text-slate-900 dark:text-white uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Explore</p>
                             <ul className="space-y-6 font-bold text-slate-500 dark:text-slate-400 text-xl">
-                                <li><a href="/books" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Library</a></li>
-                                <li><a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Authors</a></li>
+                                <li><Link to="/books" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Library</Link></li>
+                                <li><Link to="/authors" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Authors</Link></li>
                                 <li><a href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Community</a></li>
                             </ul>
                         </div>
                         <div className="space-y-10">
                             <p className="text-slate-900 dark:text-white uppercase text-xs tracking-[0.4em] font-black underline decoration-indigo-600 decoration-4 underline-offset-8">Company</p>
                             <ul className="space-y-6 font-bold text-slate-500 dark:text-slate-400 text-xl">
-                                <li><a href="/about" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About Us</a></li>
-                                <li><a href="/privacy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy</a></li>
-                                <li><a href="/contact" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</a></li>
+                                <li><Link to="/about" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">About Us</Link></li>
+                                <li><Link to="/privacy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Privacy</Link></li>
+                                <li><Link to="/contact" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Contact</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-10 col-span-2">

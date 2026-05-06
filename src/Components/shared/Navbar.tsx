@@ -104,6 +104,7 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
     const navLinks = [
         { name: 'Home', path: '/' },
         { name: 'Books', path: '/books' },
+        { name: 'Authors', path: '/authors' },
         { name: 'About', path: '/about' }
     ];
 
