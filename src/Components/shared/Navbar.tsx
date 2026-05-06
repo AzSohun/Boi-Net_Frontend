@@ -8,11 +8,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 
 type Theme = 'light' | 'dark' | 'system';
 
 export const Logo = () => (
-    <div className="flex items-center gap-3 group cursor-pointer">
+    <Link to="/" className="flex items-center gap-3 group cursor-pointer">
         <div className="relative flex items-center justify-center w-10 h-10 md:w-11 md:h-11 overflow-hidden rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/20 group-hover:bg-indigo-700 transition-all duration-300">
             <motion.div
                 initial={{ rotate: -15, scale: 0.8 }}
@@ -25,7 +26,7 @@ export const Logo = () => (
         <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans">
             Boi<span className="text-indigo-600">Net</span>
         </span>
-    </div>
+    </Link>
 );
 
 const ThemeToggle = ({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) => void }) => {
@@ -101,9 +102,9 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
     }, []);
 
     const navLinks = [
-        { name: 'Home', active: true },
-        { name: 'Books', active: false },
-        { name: 'About', active: false }
+        { name: 'Home', path: '/' },
+        { name: 'Books', path: '/books' },
+        { name: 'About', path: '/about' }
     ];
 
     return (
@@ -116,14 +117,18 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
 
                 <div className="hidden md:flex items-center gap-12 font-bold text-sm tracking-tight text-slate-600 dark:text-slate-400">
                     {navLinks.map((item) => (
-                        <a
+                        <NavLink
                             key={item.name}
-                            href="#"
-                            className={`transition-all relative group py-1 ${item.active ? 'text-indigo-600' : 'hover:text-indigo-600 dark:hover:text-indigo-400'}`}
+                            to={item.path}
+                            className={({ isActive }) => `transition-all relative group py-1 ${isActive ? 'text-indigo-600' : 'hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
-                            {item.name}
-                            <span className={`absolute -bottom-1 left-0 h-0.5 bg-indigo-600 rounded-full transition-all duration-300 ${item.active ? 'w-full' : 'w-0 group-hover:w-full'}`} />
-                        </a>
+                            {({ isActive }) => (
+                                <>
+                                    {item.name}
+                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-indigo-600 rounded-full transition-all duration-300 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                                </>
+                            )}
+                        </NavLink>
                     ))}
                 </div>
 
@@ -171,17 +176,20 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
                     >
                         <div className="space-y-8">
                             {navLinks.map((item, i) => (
-                                <motion.a
+                                <motion.div
                                     key={item.name}
-                                    href="#"
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 + 0.2 }}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className={`text-5xl font-black block tracking-tighter ${item.active ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}
                                 >
-                                    {item.name}
-                                </motion.a>
+                                    <NavLink
+                                        to={item.path}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className={({ isActive }) => `text-5xl font-black block tracking-tighter ${isActive ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}
+                                    >
+                                        {item.name}
+                                    </NavLink>
+                                </motion.div>
                             ))}
                         </div>
                         <div className="mt-auto pb-16 space-y-4">
