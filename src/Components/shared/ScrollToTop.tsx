@@ -5,25 +5,15 @@ export default function ScrollToTop() {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        // 1. Immediate reset
-        window.scrollTo(0, 0);
-        if (document.documentElement) {
-            document.documentElement.scrollTop = 0;
-        }
-        if (document.body) {
-            document.body.scrollTop = 0;
-        }
-
-        // 2. Micro-task reset (ensures it runs after React render)
-        const timeoutId = setTimeout(() => {
+        try {
             window.scrollTo({
                 top: 0,
                 left: 0,
-                behavior: 'instant' as any,
+                behavior: 'instant' as ScrollBehavior,
             });
-        }, 10);
-
-        return () => clearTimeout(timeoutId);
+        } catch (e) {
+            window.scrollTo(0, 0);
+        }
     }, [pathname]);
 
     return null;

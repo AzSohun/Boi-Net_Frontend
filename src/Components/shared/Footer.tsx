@@ -1,6 +1,5 @@
 import { Globe, Zap, Shield, ArrowRight } from 'lucide-react';
 import { Logo } from './Navbar';
-import { Link } from 'react-router-dom';
 
 export default function Footer() {
     return (
