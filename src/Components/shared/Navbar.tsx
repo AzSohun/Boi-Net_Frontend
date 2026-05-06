@@ -105,8 +105,8 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
         { name: 'Home', path: '/' },
         { name: 'Books', path: '/books' },
         { name: 'Authors', path: '/authors' },
-        { name: 'About', path: '/about' },
-        { name: 'Community', path: "/community" }
+        { name: 'Community', path: '/community' },
+        { name: 'About', path: '/about' }
     ];
 
     return (
@@ -138,12 +138,18 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
                     <ThemeToggle theme={theme} setTheme={setTheme} />
 
                     <div className="hidden sm:flex items-center gap-4 md:gap-8">
-                        <button className="text-sm font-black text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 transition-all">
+                        <Link
+                            to="/login"
+                            className="text-sm font-black text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 transition-all"
+                        >
                             Login
-                        </button>
-                        <button className="bg-indigo-600 text-white px-7 py-3.5 rounded-2xl text-sm font-black hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-900/10 active:scale-95">
+                        </Link>
+                        <Link
+                            to="/register"
+                            className="bg-indigo-600 text-white px-7 py-3.5 rounded-2xl text-sm font-black hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-900/10 active:scale-95"
+                        >
                             Get Started
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Hamburger Button */}
@@ -195,12 +201,20 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
                             ))}
                         </div>
                         <div className="mt-auto pb-16 space-y-4">
-                            <button className="w-full py-5 text-slate-900 dark:text-white font-black text-2xl border-2 border-slate-100 dark:border-slate-800 rounded-4xl active:scale-95 transition-transform">
+                            <Link
+                                to="/login"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="w-full py-5 text-slate-900 dark:text-white font-black text-2xl border-2 border-slate-100 dark:border-slate-800 rounded-4xl active:scale-95 transition-transform flex items-center justify-center"
+                            >
                                 Login
-                            </button>
-                            <button className="w-full py-5 bg-indigo-600 text-white font-black text-2xl rounded-4xl shadow-2xl shadow-indigo-200 dark:shadow-none active:scale-95 transition-transform">
+                            </Link>
+                            <Link
+                                to="/register"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="w-full py-5 bg-indigo-600 text-white font-black text-2xl rounded-4xl shadow-2xl shadow-indigo-200 dark:shadow-none active:scale-95 transition-transform flex items-center justify-center"
+                            >
                                 Get Started
-                            </button>
+                            </Link>
                         </div>
                     </motion.div>
                 )}

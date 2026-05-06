@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Shield, BookOpen, Fingerprint } from 'lucide-react';
+import { Fingerprint } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface AuthLayoutProps {
