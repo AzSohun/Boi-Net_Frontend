@@ -41,7 +41,7 @@ export default function BooksHeader({
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search titles, authors or ISBN registry..."
+                        placeholder="Search titles..."
                         className="w-full bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-3xl pl-16 pr-6 py-5 text-lg font-bold dark:text-white focus:outline-none focus:border-indigo-600/50 transition-all shadow-sm group-hover:bg-white dark:group-hover:bg-slate-900 duration-300"
                     />
                 </div>

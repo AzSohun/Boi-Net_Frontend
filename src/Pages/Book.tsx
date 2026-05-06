@@ -4,8 +4,9 @@ import { useState, useMemo } from 'react';
 import { useGetAllBooks } from '../Hooks/useBooks';
 import BooksHeader from '../Components/Book/BooksHeader';
 import FilterDrawer from '../Components/Book/FilterDrawer';
-import Pagination from '../Components/Book/Pagination';
 import BookCard from '../Components/Book/BookCard';
+import Pagination from '../Components/Book/Pagination';
+
 
 type SortBy = 'title' | 'price' | 'date';
 
@@ -22,14 +23,14 @@ export default function Books() {
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 9;
+    const pageSize = 6;
 
     // Derived Data for Filters (In a real app, these would come from an API)
     const genres = ['All', 'Technical', 'Fantasy', 'Classic', 'Education', 'Drama', 'Self-Help', 'History', 'Dystopian'];
     const authors = ['All', 'Robert C. Martin', 'Andrew Hunt', 'J.R.R. Tolkien', 'F. Scott Fitzgerald', 'Thomas H. Cormen', 'Bibhutibhushan Bandyopadhyay', 'James Clear', 'Yuval Noah Harari', 'Martin Kleppmann', 'George Orwell'];
 
     // TanStack Query Hook
-    const { data: books, isLoading, isError } = useGetAllBooks({
+    const { data: allBooks, isLoading, isError } = useGetAllBooks({
         search: searchTerm,
         genre: genreFilter === 'All' ? undefined : genreFilter,
         author: authorFilter === 'All' ? undefined : authorFilter,
@@ -37,8 +38,6 @@ export default function Books() {
         isavailable: availabilityOnly || undefined,
         sortBy: sortBy,
         asc: isAsc,
-        pagecount: currentPage,
-        pagesize: pageSize,
     });
 
     const handlePageChange = (page: number) => {
@@ -56,8 +55,13 @@ export default function Books() {
         setCurrentPage(1);
     };
 
-    // If the API returns a full list (not truly paginated on the backend yet)
-    const totalPages = books ? Math.ceil(books.length / pageSize) : 0;
+    // Pagination Logic
+    const totalPages = allBooks ? Math.ceil(allBooks.length / pageSize) : 0;
+    const paginatedBooks = useMemo(() => {
+        if (!allBooks) return [];
+        const start = (currentPage - 1) * pageSize;
+        return allBooks.slice(start, start + pageSize);
+    }, [allBooks, currentPage, pageSize]);
 
     // Calculate active filters count
     const activeFiltersCount = useMemo(() => {
@@ -117,10 +121,10 @@ export default function Books() {
                         <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Connection Error</h2>
                         <p className="text-slate-500 max-w-sm mx-auto font-medium">Failed to reach the database. Please verify your connection and try again.</p>
                     </div>
-                ) : books && books.length > 0 ? (
+                ) : paginatedBooks.length > 0 ? (
                     <div className="space-y-24">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
-                            {books.map((book, i) => (
+                            {paginatedBooks.map((book, i) => (
                                 <BookCard key={book.id} book={book} index={i} />
                             ))}
                         </div>

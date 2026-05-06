@@ -115,7 +115,7 @@ export default function FilterDrawer({
                             className="group flex items-center justify-center gap-3 w-full py-4 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-all border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl hover:border-red-500/50"
                         >
                             <RotateCcw className="w-4 h-4 group-hover:-rotate-45 transition-transform" />
-                            Reset Filters
+                            Reset Config
                         </button>
                     </div>
 

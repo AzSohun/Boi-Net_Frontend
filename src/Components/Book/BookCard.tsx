@@ -20,7 +20,7 @@ export default function BookCard({ book, index }: BookCardProps) {
             onClick={() => navigate(`/books/${book.id}`)}
             className="group cursor-pointer"
         >
-            <div className="relative aspect-[3/4] rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-xl group-hover:shadow-indigo-500/10 transition-all duration-700 border border-slate-100 dark:border-slate-800">
+            <div className="relative aspect-3/4 rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-xl group-hover:shadow-indigo-500/10 transition-all duration-700 border border-slate-100 dark:border-slate-800">
                 {!book.isAvailable && (
                     <div className="absolute top-6 left-6 z-20 px-4 py-1.5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
                         Out of Stock
@@ -34,7 +34,7 @@ export default function BookCard({ book, index }: BookCardProps) {
                     referrerPolicy="no-referrer"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
                     <div className="space-y-4 translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
                         <p className="text-white/80 text-sm font-medium line-clamp-2 leading-relaxed">
                             {book.description}

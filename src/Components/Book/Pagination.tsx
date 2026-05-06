@@ -26,7 +26,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
                         onClick={() => onPageChange(page)}
                         className={`w-12 h-12 rounded-2xl text-sm font-black transition-all ${currentPage === page ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                     >
-                        {page < 10 ? `0${page}` : page}
+                        {page < 6 ? `0${page}` : page}
                     </button>
                 ))}
             </div>
