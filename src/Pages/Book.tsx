@@ -1,12 +1,11 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { LayoutGrid, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGetAllBooks } from '../Hooks/useBooks';
 import BooksHeader from '../Components/Book/BooksHeader';
 import FilterDrawer from '../Components/Book/FilterDrawer';
-import BookCard from '../Components/Book/BookCard';
 import Pagination from '../Components/Book/Pagination';
-
+import BookCard from '../Components/Book/BookCard';
 
 type SortBy = 'title' | 'price' | 'date';
 
@@ -23,7 +22,7 @@ export default function Books() {
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 6;
+    const pageSize = 9;
 
     // Derived Data for Filters (In a real app, these would come from an API)
     const genres = ['All', 'Technical', 'Fantasy', 'Classic', 'Education', 'Drama', 'Self-Help', 'History', 'Dystopian'];
@@ -60,6 +59,17 @@ export default function Books() {
     // If the API returns a full list (not truly paginated on the backend yet)
     const totalPages = books ? Math.ceil(books.length / pageSize) : 0;
 
+    // Calculate active filters count
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (genreFilter !== 'All') count++;
+        if (authorFilter !== 'All') count++;
+        if (isbnFilter) count++;
+        if (availabilityOnly) count++;
+        if (searchTerm) count++;
+        return count;
+    }, [genreFilter, authorFilter, isbnFilter, availabilityOnly, searchTerm]);
+
     return (
         <div className="pt-32 pb-20 px-6 min-h-screen bg-white dark:bg-slate-950">
             <div className="max-w-7xl mx-auto">
@@ -70,6 +80,8 @@ export default function Books() {
                     setShowFilters={setShowFilters}
                     isAsc={isAsc}
                     setIsAsc={setIsAsc}
+                    activeFiltersCount={activeFiltersCount}
+                    onReset={handleResetFilters}
                 />
 
                 <AnimatePresence>
@@ -120,18 +132,23 @@ export default function Books() {
                     </div>
                 ) : (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="py-40 text-center space-y-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="py-40 text-center space-y-10"
                     >
-                        <div className="inline-flex items-center justify-center w-24 h-24 rounded-4xl bg-slate-50 dark:bg-slate-900 text-slate-300 dark:text-slate-700 mb-8">
-                            <LayoutGrid className="w-10 h-10" />
+                        <div className="relative inline-flex items-center justify-center">
+                            <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full scale-150" />
+                            <div className="relative w-32 h-32 rounded-[2.5rem] bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-700 shadow-xl">
+                                <LayoutGrid className="w-12 h-12" />
+                            </div>
                         </div>
-                        <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">No results found</h2>
-                        <p className="text-slate-500 max-w-sm mx-auto font-medium">We couldn't find any books matching your current filters. Try resetting or adjusting your search.</p>
+                        <div className="space-y-4">
+                            <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">Silence in the Stacks</h2>
+                            <p className="text-slate-500 max-w-sm mx-auto font-medium leading-relaxed">We couldn't find any literary works matching your current criteria. Perhaps a different search term or genre?</p>
+                        </div>
                         <button
                             onClick={handleResetFilters}
-                            className="text-indigo-600 font-black uppercase text-xs tracking-widest hover:underline"
+                            className="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-3xl font-black uppercase text-[10px] tracking-[0.3em] hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white transition-all shadow-xl shadow-slate-900/10 dark:shadow-white/5 active:scale-95"
                         >
                             Reset All Filters
                         </button>
