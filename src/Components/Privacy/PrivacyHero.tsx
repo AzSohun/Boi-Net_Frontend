@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ShieldCheck, Lock, Eye, FileText } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 export default function PrivacyHero() {
     return (
