@@ -6,6 +6,7 @@ import Footer from './Components/shared/Footer';
 import Book from './Pages/Book';
 import BookDetails from './Pages/BookDetails';
 import About from './Pages/About';
+import Privacy from './Pages/Privacy';
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="books" element={<Book />} />
           <Route path="book/:id" element={<BookDetails />} />
           <Route path="about" element={<About></About>} />
+          <Route path="privacy" element={<Privacy></Privacy>} />
         </Route>
       </Routes>
     </BrowserRouter>
