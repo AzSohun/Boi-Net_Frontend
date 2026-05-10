@@ -1,15 +1,35 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import AuthLayout from '../Components/Auth/AuthLayout';
+import { useNavigate } from 'react-router-dom';
+import { registerUser } from '../Services/authService';
 
 export default function Register() {
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setTimeout(() => setIsLoading(false), 2000);
+        setError("");
+
+        try {
+            await registerUser({ name, email, password });
+            alert("Register User Successfull"); // Can implement any alert library.
+            navigate("/login");
+        } catch (error: any) {
+            setError(error.response.data || "Register Failed, try Again")
+        } finally {
+            setIsLoading(false);
+        }
+
     };
 
     return (
