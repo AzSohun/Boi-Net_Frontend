@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'motion/react';
 import {
     LayoutDashboard,
@@ -5,6 +6,7 @@ import {
     Users,
     Settings,
     LogOut,
+    ChevronRight,
     TrendingUp,
     Clock,
     Star,
@@ -16,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Role } from '../types/auth';
 
 export default function Dashboard() {
     const { user, clearAuth } = useAuth();
@@ -26,7 +29,7 @@ export default function Dashboard() {
         navigate('/login');
     };
 
-    const isManagement = user?.role === 'Super Admin' || user?.role === 'Admin';
+    const isManagement = user?.userRole === Role.SuperAdmin || user?.userRole === Role.Admin;
 
     // --- Admin Stats ---
     const adminStats = [
@@ -55,7 +58,7 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#02040a] flex">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-[#05070a] lg:flex">
+            <aside className="w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-[#05070a] hidden lg:flex">
                 <div className="p-8">
                     <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 ${isManagement ? 'bg-emerald-600' : 'bg-indigo-600'} rounded-lg flex items-center justify-center text-white font-black`}>B</div>
@@ -123,11 +126,13 @@ export default function Dashboard() {
 
                     <div className="flex items-center gap-6">
                         <div className="text-right hidden sm:block">
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{user?.role || 'Guest'}</p>
+                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
+                                {user?.userRole === Role.SuperAdmin ? 'Super Admin' : user?.userRole === Role.Admin ? 'Admin' : 'Explorer'}
+                            </p>
                             <p className="font-bold text-sm dark:text-white">{user?.name || 'Guest Explorer'}</p>
                         </div>
                         <div className={`w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 border-2 ${isManagement ? 'border-emerald-600/30' : 'border-indigo-600/30'} overflow-hidden`}>
-                            <img src={`https://i.pravatar.cc/100?u=${user?.id || 1}`} alt="User avatar" />
+                            <img src={user?.profilePhotoUrl || `https://i.pravatar.cc/100?u=${user?.id || 1}`} alt="User avatar" />
                         </div>
                     </div>
                 </header>
@@ -137,7 +142,7 @@ export default function Dashboard() {
                     <section className={`relative overflow-hidden ${isManagement ? 'bg-slate-900' : 'bg-slate-950'} rounded-[2.5rem] p-10 text-white`}>
                         <div className="absolute inset-0 opacity-20"
                             style={{ backgroundImage: 'radial-gradient(circle, #4f46e5 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-                        <div className={`absolute bottom-0 right-0 w-125 h-125 ${isManagement ? 'bg-emerald-600/20' : 'bg-indigo-600/20'} blur-[100px] rounded-full translate-y-1/2 translate-x-1/2`} />
+                        <div className={`absolute bottom-0 right-0 w-[500px] h-[500px] ${isManagement ? 'bg-emerald-600/20' : 'bg-indigo-600/20'} blur-[100px] rounded-full translate-y-1/2 translate-x-1/2`} />
 
                         <div className="relative z-10 space-y-6">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
@@ -151,7 +156,7 @@ export default function Dashboard() {
                                     {isManagement ? `Welcome, ${user?.name?.split(' ')[0]}.` : `Welcome home, ${user?.name?.split(' ')[0]}.`}
                                 </h2>
                                 <p className="text-slate-400 font-medium text-lg italic tracking-wide">
-                                    {isManagement ? `System health is optimal. Accessing ${user?.role} privileges.` : 'Continue your journey through the global narrative layer.'}
+                                    {isManagement ? `System health is optimal. Accessing ${user?.userRole === Role.SuperAdmin ? 'Super Admin' : 'Admin'} privileges.` : 'Continue your journey through the global narrative layer.'}
                                 </p>
                             </div>
                             <div className="flex gap-4 pt-4">
@@ -188,7 +193,7 @@ export default function Dashboard() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="bg-white dark:bg-slate-900 p-6 rounded-4xl border border-slate-100 dark:border-slate-800 shadow-sm"
+                                className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm"
                             >
                                 <div className="flex items-center justify-between mb-4">
                                     <div className={`p-2.5 rounded-xl ${card.color} text-white`}>
@@ -266,7 +271,7 @@ export default function Dashboard() {
                                     {recentBooks.map((book) => (
                                         <div key={book.id} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 rounded-[2.5rem] flex flex-col gap-6 group hover:border-indigo-600/30 transition-all hover:shadow-2xl hover:shadow-indigo-600/5">
                                             <div className="flex gap-4">
-                                                <div className="w-16 h-20 rounded-xl overflow-hidden shrink-0 shadow-xl shadow-black/10">
+                                                <div className="w-16 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-xl shadow-black/10">
                                                     <img src={book.cover} alt={book.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
