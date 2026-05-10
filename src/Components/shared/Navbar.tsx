@@ -4,11 +4,14 @@ import {
     Monitor,
     BookOpen,
     Menu,
-    X
+    X,
+    LayoutDashboard,
+    LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../Context/AuthContext';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -92,6 +95,8 @@ const ThemeToggle = ({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) =
 };
 
 export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) => void }) {
+    const { user, accessToken, clearAuth } = useAuth();
+    const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
@@ -100,6 +105,12 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const handleLogout = () => {
+        clearAuth();
+        navigate('/');
+        setIsMenuOpen(false);
+    };
 
     const navLinks = [
         { name: 'Home', path: '/' },
@@ -117,7 +128,7 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
             <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
                 <Logo />
 
-                <div className="hidden md:flex items-center gap-12 font-bold text-sm tracking-tight text-slate-600 dark:text-slate-400">
+                <div className="hidden md:flex items-center gap-8 lg:gap-12 font-bold text-sm tracking-tight text-slate-600 dark:text-slate-400">
                     {navLinks.map((item) => (
                         <NavLink
                             key={item.name}
@@ -137,19 +148,40 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
                 <div className="flex items-center gap-3 md:gap-6">
                     <ThemeToggle theme={theme} setTheme={setTheme} />
 
-                    <div className="hidden sm:flex items-center gap-4 md:gap-8">
-                        <Link
-                            to="/login"
-                            className="text-sm font-black text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 transition-all"
-                        >
-                            Login
-                        </Link>
-                        <Link
-                            to="/register"
-                            className="bg-indigo-600 text-white px-7 py-3.5 rounded-2xl text-sm font-black hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-900/10 active:scale-95"
-                        >
-                            Get Started
-                        </Link>
+                    <div className="hidden sm:flex items-center gap-4 md:gap-6">
+                        {accessToken ? (
+                            <>
+                                <Link
+                                    to="/dashboard"
+                                    className="flex items-center gap-2 text-sm font-black text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 transition-all"
+                                >
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    Dashboard
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-2 text-sm font-black text-red-500 hover:text-red-600 px-2 transition-all"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className="text-sm font-black text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 transition-all"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    to="/register"
+                                    className="bg-indigo-600 text-white px-7 py-3 rounded-xl text-sm font-black hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-900/10 active:scale-95"
+                                >
+                                    Get Started
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     {/* Hamburger Button */}
@@ -180,9 +212,9 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
                         transition={{ type: 'spring', damping: 30, stiffness: 200 }}
-                        className="fixed inset-0 bg-[#FDFCFB] dark:bg-slate-950 z-40 flex flex-col pt-28 px-10 md:hidden"
+                        className="fixed inset-0 bg-[#FDFCFB] dark:bg-slate-950 z-40 flex flex-col pt-28 px-10 md:hidden overflow-y-auto"
                     >
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             {navLinks.map((item, i) => (
                                 <motion.div
                                     key={item.name}
@@ -193,28 +225,51 @@ export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t
                                     <NavLink
                                         to={item.path}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className={({ isActive }) => `text-5xl font-black block tracking-tighter ${isActive ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}
+                                        className={({ isActive }) => `text-4xl font-black block tracking-tighter ${isActive ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}
                                     >
                                         {item.name}
                                     </NavLink>
                                 </motion.div>
                             ))}
                         </div>
+
                         <div className="mt-auto pb-16 space-y-4">
-                            <Link
-                                to="/login"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="w-full py-5 text-slate-900 dark:text-white font-black text-2xl border-2 border-slate-100 dark:border-slate-800 rounded-4xl active:scale-95 transition-transform flex items-center justify-center"
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                to="/register"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="w-full py-5 bg-indigo-600 text-white font-black text-2xl rounded-4xl shadow-2xl shadow-indigo-200 dark:shadow-none active:scale-95 transition-transform flex items-center justify-center"
-                            >
-                                Get Started
-                            </Link>
+                            {accessToken ? (
+                                <>
+                                    <Link
+                                        to="/dashboard"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="w-full py-5 text-indigo-600 dark:text-indigo-400 font-black text-2xl border-2 border-indigo-600/20 rounded-4xl active:scale-95 transition-transform flex items-center justify-center gap-3"
+                                    >
+                                        <LayoutDashboard className="w-8 h-8" />
+                                        Dashboard
+                                    </Link>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full py-5 text-red-500 font-black text-2xl border-2 border-red-500/20 rounded-4xl active:scale-95 transition-transform flex items-center justify-center gap-3"
+                                    >
+                                        <LogOut className="w-8 h-8" />
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        to="/login"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="w-full py-5 text-slate-900 dark:text-white font-black text-2xl border-2 border-slate-100 dark:border-slate-800 rounded-4xl active:scale-95 transition-transform flex items-center justify-center"
+                                    >
+                                        Login
+                                    </Link>
+                                    <Link
+                                        to="/register"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="w-full py-5 bg-indigo-600 text-white font-black text-2xl rounded-4xl shadow-2xl shadow-indigo-200 dark:shadow-none active:scale-95 transition-transform flex items-center justify-center"
+                                    >
+                                        Get Started
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}

@@ -1,21 +1,20 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Home from './Pages/Home';
-import Navbar from './Components/shared/Navbar';
-import Footer from './Components/shared/Footer';
-import Book from './Pages/Book';
-import BookDetails from './Pages/BookDetails';
 import About from './Pages/About';
-import Privacy from './Pages/Privacy';
-import Contact from './Pages/Contact';
 import Authors from './Pages/Authors';
-import ScrollToTop from './Components/shared/ScrollToTop';
 import Community from './Pages/Community';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
+import BookDetails from './Pages/BookDetails';
+import Privacy from './Pages/Privacy';
+import Contact from './Pages/Contact';
 import Dashboard from './Pages/Dashboard';
-import { useAuth } from './Context/AuthContext';
-
+import { useAuth, AuthProvider } from './Context/AuthContext';
+import Navbar from './Components/shared/Navbar';
+import Footer from './Components/shared/Footer';
+import ScrollToTop from './Components/shared/ScrollToTop';
+import Books from './Pages/Book';
 
 // --- Protected Route ---
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -27,9 +26,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-
-
-// --- Types ---
+// --- Layout ---
 type Theme = 'light' | 'dark' | 'system';
 
 function Layout({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) => void }) {
@@ -76,32 +73,32 @@ export default function App() {
   }, [theme]);
 
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Layout theme={theme} setTheme={setTheme} />}>
-          <Route index element={<Home />} />
-          {/* Add other routes here, e.g. <Route path="books" element={<Books />} /> */}
-          <Route path="books" element={<Book />} />
-          <Route path="book/:id" element={<BookDetails />} />
-          <Route path="about" element={<About />} />
-          <Route path="privacy" element={<Privacy />} />
-          <Route path="community" element={<Community />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="authors" element={<Authors />} />
-
-        </Route>
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Layout theme={theme} setTheme={setTheme} />}>
+            <Route index element={<Home />} />
+            <Route path="about" element={<About />} />
+            <Route path="books" element={<Books />} />
+            <Route path="authors" element={<Authors />} />
+            <Route path="community" element={<Community />} />
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="books/:id" element={<BookDetails />} />
+            <Route path="privacy" element={<Privacy />} />
+            <Route path="contact" element={<Contact />} />
+          </Route>
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
