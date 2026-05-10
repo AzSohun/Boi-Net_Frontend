@@ -1,3 +1,4 @@
+import type { Book } from "./book";
 
 export const Role = {
     SuperAdmin: 0,
@@ -26,7 +27,23 @@ export interface UserDto {
     profilePhotoId?: string;
     dob?: string | null;
     userRole: RoleValue;
-    wishlist: any[];
+    wishlist: Book[];
+}
+
+export interface UserProfileResponseDto {
+    id: string;
+    email: string;
+    name: string;
+    profilePhotoUrl: string;
+    dob?: string | null;
+    userRole: RoleValue;
+    wishlist: Book[];
+}
+
+export interface UpdateUserDto {
+    name?: string;
+    dob?: string | null;
+    profilePhoto?: File;
 }
 
 export interface AuthResponse {
