@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Home from './Pages/Home';
 import Navbar from './Components/shared/Navbar';
 import Footer from './Components/shared/Footer';
@@ -13,6 +13,21 @@ import ScrollToTop from './Components/shared/ScrollToTop';
 import Community from './Pages/Community';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
+import Dashboard from './Pages/Dashboard';
+import { useAuth } from './Context/AuthContext';
+
+
+// --- Protected Route ---
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { accessToken, isLoading } = useAuth();
+
+  if (isLoading) return null; // Or a loading spinner
+  if (!accessToken) return <Navigate to="/login" replace />;
+
+  return <>{children}</>;
+}
+
+
 
 // --- Types ---
 type Theme = 'light' | 'dark' | 'system';
@@ -78,6 +93,14 @@ export default function App() {
           <Route path="authors" element={<Authors />} />
 
         </Route>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

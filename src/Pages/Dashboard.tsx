@@ -5,7 +5,6 @@ import {
     Users,
     Settings,
     LogOut,
-    ChevronRight,
     TrendingUp,
     Clock,
     Star,
