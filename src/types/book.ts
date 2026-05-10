@@ -1,8 +1,6 @@
 
-
-// Book Interface
+// Book Interface (Matches Boi.Net.Model.Book and Boi.Net.DTOs.BookDTOs.BookDto)
 export interface Book {
-
     id: number;
     title: string;
     description: string;
@@ -15,15 +13,13 @@ export interface Book {
     pageCount?: number;
     genre?: string;
     isAvailable: boolean;
-    publishedDate?: string;
+    publishDate?: string; // DateOnly serialized as string
     createdAt: string;
     updatedAt?: string;
-
 }
 
-// Create Book Form Data Interface
+// Create Book Form Data Interface (Matches Boi.Net.DTOs.BookDTOs.CreateBookDto)
 export interface CreateBookFormData {
-
     title: string;
     description: string;
     author: string;
@@ -34,12 +30,24 @@ export interface CreateBookFormData {
     pageCount?: number;
     genre?: string;
     isAvailable: boolean;
-    publishedDate?: string;
-
+    publishDate?: string;
 }
 
+// Update Book DTO (Matches Boi.Net.DTOs.BookDTOs.UpdateBookDto)
+export interface UpdateBookFormData {
+    title: string;
+    description: string;
+    author: string;
+    publisher?: string;
+    isbn?: string;
+    price: number;
+    imageFile?: File | null;
+    pageCount?: number;
+    genre?: string;
+    isAvailable: boolean;
+    publishDate?: string;
+}
 
-// All the paginated and filtered Data will be stored Here.
 export interface BookResponse {
     data: Book[];
 }

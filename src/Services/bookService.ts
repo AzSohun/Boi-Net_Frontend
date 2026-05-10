@@ -1,10 +1,8 @@
-import { axiosClient } from "../Api/axiosClient"
-import type { Book } from "../types/book"
-
+import { axiosClient } from "../Api/axiosClient";
+import type { Book } from "../types/book";
 
 export const bookService = {
-
-    // Get All User with Axios. This optional params for the filtered data.
+    // Get All Books with optional filters
     getAllBooks: async (params?: any): Promise<Book[]> => {
         const response = await axiosClient.get<Book[]>('/book', { params });
         return response.data;
