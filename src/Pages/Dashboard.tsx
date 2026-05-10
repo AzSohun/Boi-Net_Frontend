@@ -27,12 +27,18 @@ import {
 import { useAuth } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Role } from '../types/auth';
+import BookManagement from '../Components/Dashboard/BookManagement';
+import UserManagement from '../Components/Dashboard/UserManagement';
+
+
+type DashboardSection = 'overview' | 'users' | 'library' | 'security' | 'analytics' | 'settings' | 'social' | 'wishlist';
 
 export default function Dashboard() {
     const { user, clearAuth } = useAuth();
     const navigate = useNavigate();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -81,130 +87,16 @@ export default function Dashboard() {
         show: { opacity: 1, y: 0 }
     };
 
-    return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-slate-900 dark:text-slate-100 flex overflow-hidden font-sans">
-
-            {/* Sidebar - Glassmorphism */}
-            <motion.aside
-                initial={false}
-                animate={{ width: isSidebarOpen ? 280 : 80 }}
-                className="relative z-50 flex-col bg-white/70 dark:bg-black/40 backdrop-blur-2xl border-r border-slate-200 dark:border-white/5 transition-all duration-300 ease-in-out hidden md:flex"
-            >
-                <div className="p-6 flex items-center justify-between">
-                    <AnimatePresence mode="wait">
-                        {isSidebarOpen && (
-                            <motion.div
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                className="flex items-center gap-3"
-                            >
-                                <div className={`w-10 h-10 bg-${accentColor}-600 rounded-2xl flex items-center justify-center text-white font-black shadow-xl shadow-${accentColor}-600/20`}>B</div>
-                                <span className="font-black text-2xl tracking-tighter uppercase italic font-serif">BoiNet</span>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                    <button
-                        onClick={() => setSidebarOpen(!isSidebarOpen)}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
-                    >
-                        <ChevronRight size={20} className={`transition-transform duration-300 ${isSidebarOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                </div>
-
-                <nav className="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto">
-                    <SidebarItem icon={LayoutDashboard} label="Dashboard" active accent={accentColor} expanded={isSidebarOpen} />
-                    {isManagement ? (
-                        <>
-                            <SidebarItem icon={Users} label="User Control" expanded={isSidebarOpen} />
-                            <SidebarItem icon={BookOpen} label="Library Registry" expanded={isSidebarOpen} />
-                            <SidebarItem icon={ShieldCheck} label="Security Core" expanded={isSidebarOpen} />
-                            <SidebarItem icon={BarChart3} label="Analytics" expanded={isSidebarOpen} />
-                        </>
-                    ) : (
-                        <>
-                            <SidebarItem icon={BookOpen} label="My Library" expanded={isSidebarOpen} />
-                            <SidebarItem icon={Users} label="Social Feed" expanded={isSidebarOpen} />
-                            <SidebarItem icon={Star} label="Wishlist" expanded={isSidebarOpen} />
-                        </>
-                    )}
-                    <SidebarItem icon={Settings} label="System Config" expanded={isSidebarOpen} />
-                </nav>
-
-                <div className="p-4 border-t border-slate-200 dark:border-white/5">
-                    <motion.button
-                        onClick={handleLogout}
-                        whileHover={{ x: 5 }}
-                        className={`w-full flex items-center ${isSidebarOpen ? 'justify-start px-4' : 'justify-center'} py-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/5 rounded-2xl transition-all font-bold text-sm tracking-tight`}
-                    >
-                        <LogOut size={20} />
-                        {isSidebarOpen && <span className="ml-3 font-black uppercase tracking-widest text-[11px]">Terminate</span>}
-                    </motion.button>
-                </div>
-            </motion.aside>
-
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col relative overflow-hidden">
-
-                {/* Decorative Background Elements */}
-                <div className="absolute top-0 right-0 w-150 h-150 bg-emerald-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-100 h-100 bg-indigo-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
-
-                {/* Global Header */}
-                <header className="h-20 flex items-center justify-between px-8 z-20 relative">
-                    <div className="flex items-center gap-4">
-                        <div className="md:hidden">
-                            <div className={`w-8 h-8 bg-${accentColor}-600 rounded-xl flex items-center justify-center text-white font-black`}>B</div>
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-black tracking-tight dark:text-white uppercase font-mono">
-                                {isManagement ? `ACCESS_LVL_${user?.userRole}` : 'DASHBOARD_V2'}
-                            </h1>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">
-                                System Time: {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-2 rounded-2xl">
-                            <Search size={16} className="text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Search resources..."
-                                className="bg-transparent border-none outline-none text-sm font-medium w-48 placeholder:text-slate-500"
-                            />
-                        </div>
-
-                        <button className="relative p-2.5 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
-                            <Bell size={20} />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />
-                        </button>
-
-                        <div className="flex items-center gap-4 pl-4 border-l border-slate-200 dark:border-white/10">
-                            <div className="text-right hidden sm:block">
-                                <p className={`text-[9px] font-black uppercase text-${accentColor}-500 tracking-[0.2em]`}>{roleLabel}</p>
-                                <p className="font-bold text-sm tracking-tight">{user?.name || 'Explorer'}</p>
-                            </div>
-                            <div className={`w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 border-2 border-${accentColor}-600/20 overflow-hidden p-0.5`}>
-                                <img
-                                    src={user?.profilePhotoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'admin'}`}
-                                    alt="Avatar"
-                                    className="w-full h-full rounded-[14px] object-cover"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                {/* Content Scrollable Area */}
-                <div className="flex-1 overflow-y-auto px-8 pt-4 pb-12 z-10 custom-scrollbar">
-                    <motion.div
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="show"
-                        className="max-w-7xl mx-auto space-y-8"
-                    >
+    const renderContent = () => {
+        switch (activeSection) {
+            case 'library':
+                return <BookManagement />;
+            case 'users':
+                return <UserManagement />;
+            case 'overview':
+            default:
+                return (
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8">
                         {/* Hero Welcome Card */}
                         <motion.section
                             variants={itemVariants}
@@ -242,8 +134,8 @@ export default function Dashboard() {
                                     </div>
                                 ) : (
                                     <div className="flex gap-3">
-                                        <ActionButton label="Add Book" icon={Plus} onClick={() => { }} dark />
-                                        <ActionButton label="Community" icon={Users} onClick={() => { }} />
+                                        <ActionButton label="Add Book" icon={Plus} onClick={() => setActiveSection('library')} dark />
+                                        <ActionButton label="Community" icon={Users} onClick={() => setActiveSection('social')} />
                                     </div>
                                 )}
                             </div>
@@ -276,7 +168,10 @@ export default function Dashboard() {
                                             <Filter size={12} />
                                             Filter
                                         </button>
-                                        <button className={`text-[10px] font-black px-5 py-2 rounded-xl bg-${accentColor}-600 text-white shadow-lg shadow-${accentColor}-600/20 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest`}>
+                                        <button
+                                            onClick={() => setActiveSection('library')}
+                                            className={`text-[10px] font-black px-5 py-2 rounded-xl bg-${accentColor}-600 text-white shadow-lg shadow-${accentColor}-600/20 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest`}
+                                        >
                                             View All
                                         </button>
                                     </div>
@@ -291,8 +186,12 @@ export default function Dashboard() {
                                                 value="99.8%"
                                                 status="Healthy"
                                                 icon={Activity}
+                                                onClick={() => setActiveSection('analytics')}
                                             />
-                                            <div className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-between group hover:border-emerald-500/50 transition-colors">
+                                            <div
+                                                onClick={() => setActiveSection('users')}
+                                                className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-between group hover:border-emerald-500/50 transition-colors cursor-pointer"
+                                            >
                                                 <div className="space-y-4">
                                                     <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500">
                                                         <Users size={24} />
@@ -346,7 +245,7 @@ export default function Dashboard() {
                                                 className="w-full h-full object-cover"
                                                 alt=""
                                             />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer" onClick={() => setActiveSection('settings')}>
                                                 <Settings size={20} />
                                             </div>
                                         </div>
@@ -403,10 +302,198 @@ export default function Dashboard() {
                                         ))}
                                     </div>
                                 </div>
-
                             </motion.section>
                         </div>
                     </motion.div>
+                );
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-slate-900 dark:text-slate-100 flex overflow-hidden font-sans">
+
+            {/* Sidebar - Glassmorphism */}
+            <motion.aside
+                initial={false}
+                animate={{ width: isSidebarOpen ? 280 : 80 }}
+                className="relative z-50 flex-col bg-white/70 dark:bg-black/40 backdrop-blur-2xl border-r border-slate-200 dark:border-white/5 transition-all duration-300 ease-in-out hidden md:flex"
+            >
+                <div className="p-6 flex items-center justify-between">
+                    <AnimatePresence mode="wait">
+                        {isSidebarOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                className="flex items-center gap-3 cursor-pointer"
+                                onClick={() => setActiveSection('overview')}
+                            >
+                                <div className={`w-10 h-10 bg-${accentColor}-600 rounded-2xl flex items-center justify-center text-white font-black shadow-xl shadow-${accentColor}-600/20`}>B</div>
+                                <span className="font-black text-2xl tracking-tighter uppercase italic font-serif">BoiNet</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    <button
+                        onClick={() => setSidebarOpen(!isSidebarOpen)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                    >
+                        <ChevronRight size={20} className={`transition-transform duration-300 ${isSidebarOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                </div>
+
+                <nav className="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto">
+                    <SidebarItem
+                        icon={LayoutDashboard}
+                        label="Dashboard"
+                        active={activeSection === 'overview'}
+                        accent={accentColor}
+                        expanded={isSidebarOpen}
+                        onClick={() => setActiveSection('overview')}
+                    />
+                    {isManagement ? (
+                        <>
+                            <SidebarItem
+                                icon={Users}
+                                label="User Control"
+                                active={activeSection === 'users'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('users')}
+                            />
+                            <SidebarItem
+                                icon={BookOpen}
+                                label="Library Registry"
+                                active={activeSection === 'library'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('library')}
+                            />
+                            <SidebarItem
+                                icon={ShieldCheck}
+                                label="Security Core"
+                                active={activeSection === 'security'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('security')}
+                            />
+                            <SidebarItem
+                                icon={BarChart3}
+                                label="Analytics"
+                                active={activeSection === 'analytics'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('analytics')}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <SidebarItem
+                                icon={BookOpen}
+                                label="My Library"
+                                active={activeSection === 'library'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('library')}
+                            />
+                            <SidebarItem
+                                icon={Users}
+                                label="Social Feed"
+                                active={activeSection === 'social'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('social')}
+                            />
+                            <SidebarItem
+                                icon={Star}
+                                label="Wishlist"
+                                active={activeSection === 'wishlist'}
+                                accent={accentColor}
+                                expanded={isSidebarOpen}
+                                onClick={() => setActiveSection('wishlist')}
+                            />
+                        </>
+                    )}
+                    <SidebarItem
+                        icon={Settings}
+                        label="System Config"
+                        active={activeSection === 'settings'}
+                        accent={accentColor}
+                        expanded={isSidebarOpen}
+                        onClick={() => setActiveSection('settings')}
+                    />
+                </nav>
+
+                <div className="p-4 border-t border-slate-200 dark:border-white/5">
+                    <motion.button
+                        onClick={handleLogout}
+                        whileHover={{ x: 5 }}
+                        className={`w-full flex items-center ${isSidebarOpen ? 'justify-start px-4' : 'justify-center'} py-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/5 rounded-2xl transition-all font-bold text-sm tracking-tight`}
+                    >
+                        <LogOut size={20} />
+                        {isSidebarOpen && <span className="ml-3 font-black uppercase tracking-widest text-[11px]">Terminate</span>}
+                    </motion.button>
+                </div>
+            </motion.aside>
+
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col relative overflow-hidden">
+
+                {/* Decorative Background Elements */}
+                <div className="absolute top-0 right-0 w-150 h-150 bg-emerald-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-100 h-100 bg-indigo-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
+
+                {/* Global Header */}
+                <header className="h-20 flex items-center justify-between px-8 z-20 relative">
+                    <div className="flex items-center gap-4">
+                        <div className="md:hidden" onClick={() => setActiveSection('overview')}>
+                            <div className={`w-8 h-8 bg-${accentColor}-600 rounded-xl flex items-center justify-center text-white font-black`}>B</div>
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black tracking-tight dark:text-white uppercase font-mono">
+                                {isManagement ? `ACCESS_LVL_${user?.userRole}` : 'DASHBOARD_V2'}
+                            </h1>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] font-mono">
+                                System Time: {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-2 rounded-2xl">
+                            <Search size={16} className="text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search resources..."
+                                className="bg-transparent border-none outline-none text-sm font-medium w-48 placeholder:text-slate-500"
+                            />
+                        </div>
+
+                        <button className="relative p-2.5 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                            <Bell size={20} />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />
+                        </button>
+
+                        <div className="flex items-center gap-4 pl-4 border-l border-slate-200 dark:border-white/10">
+                            <div className="text-right hidden sm:block">
+                                <p className={`text-[9px] font-black uppercase text-${accentColor}-500 tracking-[0.2em]`}>{roleLabel}</p>
+                                <p className="font-bold text-sm tracking-tight">{user?.name || 'Explorer'}</p>
+                            </div>
+                            <div className={`w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 border-2 border-${accentColor}-600/20 overflow-hidden p-0.5`}>
+                                <img
+                                    src={user?.profilePhotoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'admin'}`}
+                                    alt="Avatar"
+                                    className="w-full h-full rounded-[14px] object-cover"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Content Scrollable Area */}
+                <div className="flex-1 overflow-y-auto px-8 pt-4 pb-12 z-10 custom-scrollbar">
+                    <div className="max-w-7xl mx-auto">
+                        {renderContent()}
+                    </div>
                 </div>
             </main>
         </div>
@@ -415,14 +502,16 @@ export default function Dashboard() {
 
 // --- Subcomponents ---
 
-function SidebarItem({ icon: Icon, label, active = false, accent = 'indigo', expanded = true }: any) {
+function SidebarItem({ icon: Icon, label, active = false, accent = 'indigo', expanded = true, onClick }: any) {
     return (
-        <button className={`
+        <button
+            onClick={onClick}
+            className={`
       w-full flex items-center transition-all duration-300 rounded-2xl group
       ${expanded ? 'px-4' : 'justify-center'} py-3.5
       ${active
-                ? `bg-${accent}-600 text-white shadow-xl shadow-${accent}-600/20`
-                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}
+                    ? `bg-${accent}-600 text-white shadow-xl shadow-${accent}-600/20`
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}
     `}>
             <Icon size={20} />
             {expanded && (
@@ -518,9 +607,12 @@ function BookProgressCard({ title, author, progress, color }: any) {
     );
 }
 
-function ManagementWidget({ title, value, status, icon: Icon }: any) {
+function ManagementWidget({ title, value, status, icon: Icon, onClick }: any) {
     return (
-        <div className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-between group hover:border-emerald-500/50 transition-all shadow-sm">
+        <div
+            onClick={onClick}
+            className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-between group hover:border-emerald-500/50 transition-all shadow-sm cursor-pointer"
+        >
             <div className="flex items-center justify-between">
                 <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
                     <Icon size={20} />

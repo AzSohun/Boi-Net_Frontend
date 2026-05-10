@@ -95,7 +95,7 @@ const ThemeToggle = ({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) =
 };
 
 export default function Navbar({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) => void }) {
-    const { user, accessToken, clearAuth } = useAuth();
+    const { accessToken, clearAuth } = useAuth();
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
