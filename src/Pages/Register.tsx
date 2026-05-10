@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
-import AuthLayout from '../Components/Auth/AuthLayout';
+import { motion, AnimatePresence } from 'motion/react';
+import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../Services/authService';
+import AuthLayout from '../Components/Auth/AuthLayout';
 
 export default function Register() {
     const [name, setName] = useState("");
@@ -17,19 +18,17 @@ export default function Register() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 2000);
         setError("");
 
         try {
             await registerUser({ name, email, password });
-            alert("Register User Successfull"); // Can implement any alert library.
-            navigate("/login");
-        } catch (error: any) {
-            setError(error.response.data || "Register Failed, try Again")
+            // Registration successful
+            navigate("/login", { state: { message: "Account created successfully. Please login." } });
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.response?.data || "Registration failed. Please try again.");
         } finally {
             setIsLoading(false);
         }
-
     };
 
     return (
@@ -39,6 +38,20 @@ export default function Register() {
             type="register"
         >
             <form onSubmit={handleSubmit} className="space-y-8">
+                <AnimatePresence mode="wait">
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-xs font-bold"
+                        >
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            {error}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 ml-1">Universal Name</label>
@@ -49,6 +62,8 @@ export default function Register() {
                             <input
                                 required
                                 type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 placeholder="Julian Barnes"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent border-b-slate-100 dark:border-b-slate-800 rounded-xl py-4 pl-12 pr-5 outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-950 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800"
                             />
@@ -64,6 +79,8 @@ export default function Register() {
                             <input
                                 required
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="hello@boinet.io"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent border-b-slate-100 dark:border-b-slate-800 rounded-xl py-4 pl-12 pr-5 outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-950 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800"
                             />
@@ -79,6 +96,8 @@ export default function Register() {
                             <input
                                 required
                                 type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Create secure key"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent border-b-slate-100 dark:border-b-slate-800 rounded-xl py-4 pl-12 pr-12 outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-950 dark:text-white placeholder:text-slate-100 dark:placeholder:text-slate-900"
                             />
