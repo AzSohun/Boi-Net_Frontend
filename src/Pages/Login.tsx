@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
-import AuthLayout from '../Components/Auth/AuthLayout';
+import { motion, AnimatePresence } from 'motion/react';
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
 import { loginUser } from '../Services/authService';
+import AuthLayout from '../Components/Auth/AuthLayout';
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -18,16 +19,14 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 2000);
-
         setError("");
 
         try {
             const data = await loginUser({ email, password });
             setAuth(data.user, data.accessToken);
             navigate("/dashboard");
-        } catch (error: any) {
-            setError(error.response?.data || "Invalid Credential. Try Ageain")
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.response?.data || "Invalid Credentials. Try Again.");
         } finally {
             setIsLoading(false);
         }
@@ -40,6 +39,20 @@ export default function Login() {
             type="login"
         >
             <form onSubmit={handleSubmit} className="space-y-8">
+                <AnimatePresence mode="wait">
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-xs font-bold"
+                        >
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            {error}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 ml-1">Email Address</label>
@@ -50,6 +63,8 @@ export default function Login() {
                             <input
                                 required
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="identity@network.io"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent border-b-slate-100 dark:border-b-slate-800 rounded-xl py-4 pl-12 pr-5 outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-950 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800"
                             />
@@ -68,6 +83,8 @@ export default function Login() {
                             <input
                                 required
                                 type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••••••"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent border-b-slate-100 dark:border-b-slate-800 rounded-xl py-4 pl-12 pr-12 outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-950 dark:text-white placeholder:text-slate-100 dark:placeholder:text-slate-900"
                             />
