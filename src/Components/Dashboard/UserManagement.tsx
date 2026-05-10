@@ -5,14 +5,11 @@ import {
     Search,
     Trash2,
     Shield,
-    Lock,
-    Unlock,
-    MoreHorizontal,
     Mail,
-    Calendar,
-    UserCheck,
-    UserX,
-    ChevronDown
+    MoreVertical,
+    UserPlus,
+    Filter,
+    CheckCircle2
 } from 'lucide-react';
 import { userService } from '../../Services/userService';
 import type { UserDto, RoleValue } from '../../types/auth';
@@ -34,7 +31,6 @@ export default function UserManagement() {
             setUsers(data);
         } catch (error) {
             console.error("Failed to fetch users", error);
-            // Fallback with mock data for demo since API might not exist yet
             setUsers([
                 { id: '1', name: 'Admin Zero', email: 'admin@boinet.com', userRole: Role.SuperAdmin, profilePhotoUrl: '', wishlist: [] },
                 { id: '2', name: 'Alice Explorer', email: 'alice@test.com', userRole: Role.User, profilePhotoUrl: '', wishlist: [] },
@@ -45,17 +41,8 @@ export default function UserManagement() {
         }
     };
 
-    const handleUpdateRole = async (userId: string, newRole: RoleValue) => {
-        try {
-            await userService.updateUserRole(userId, newRole);
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, userRole: newRole } : u));
-        } catch (error) {
-            console.error("Role update failed", error);
-        }
-    };
-
     const handleDelete = async (userId: string) => {
-        if (window.confirm("Terminate this explorer node? This action is irreversible.")) {
+        if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
             try {
                 await userService.deleteUser(userId);
                 setUsers(prev => prev.filter(u => u.id !== userId));
@@ -70,110 +57,123 @@ export default function UserManagement() {
         u.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const getRoleStyle = (role: RoleValue) => {
+        if (role === Role.SuperAdmin) return 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-900/50';
+        if (role === Role.Admin) return 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50';
+        return 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-900/50';
+    };
+
     const getRoleLabel = (role: RoleValue) => {
-        if (role === Role.SuperAdmin) return { label: 'Super Admin', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' };
-        if (role === Role.Admin) return { label: 'Curator', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' };
-        return { label: 'Explorer', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' };
+        if (role === Role.SuperAdmin) return 'Super Admin';
+        if (role === Role.Admin) return 'Curator';
+        return 'Explorer';
     };
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-black tracking-tight uppercase font-serif italic underline decoration-indigo-500 decoration-2 underline-offset-8">User Control Core</h2>
-                    <p className="text-slate-400 text-sm font-medium mt-3">Monitor and manage access levels for all narrative explorers.</p>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">User Directory</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Review activity and manage permissions for all users.</p>
                 </div>
-                <div className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl">
-                    <Users size={18} className="text-indigo-500" />
-                    <span className="font-black text-sm">{users.length} Active Nodes</span>
+                <div className="flex items-center gap-2">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
+                        <Filter size={16} />
+                        Filter
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-sm">
+                        <UserPlus size={16} />
+                        Invite User
+                    </button>
                 </div>
             </div>
 
-            <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                <input
-                    type="text"
-                    placeholder="Search by name or email alias..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl outline-none focus:border-indigo-500/50 transition-all font-medium text-sm"
-                />
+            {/* Controls */}
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search by name or email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500 transition-all text-sm text-slate-800 dark:text-slate-200"
+                    />
+                </div>
+                <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 px-2 italic">
+                    Displaying {filteredUsers.length} of {users.length} users
+                </div>
             </div>
 
-            <div className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-[3rem] overflow-hidden">
+            {/* User Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-100 dark:border-white/5">
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Explorer Identity</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Access Tier</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Registry Date</th>
-                                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Overrides</th>
+                            <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">User</th>
+                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Access Level</th>
+                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
+                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                            <AnimatePresence mode="popLayout">
-                                {filteredUsers.map((user) => {
-                                    const roleData = getRoleLabel(user.userRole);
-                                    return (
-                                        <motion.tr
-                                            key={user.id}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
-                                        >
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 overflow-hidden p-0.5 group-hover:scale-110 transition-transform">
-                                                        <img
-                                                            src={user.profilePhotoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
-                                                            alt=""
-                                                            className="w-full h-full object-cover rounded-[14px]"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-black text-sm tracking-tight">{user.name}</p>
-                                                        <p className="text-[10px] font-medium text-slate-400 flex items-center gap-1.5 mt-0.5">
-                                                            <Mail size={10} />
-                                                            {user.email}
-                                                        </p>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            <AnimatePresence>
+                                {filteredUsers.map((user, idx) => (
+                                    <motion.tr
+                                        key={user.id}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: idx * 0.05 }}
+                                        className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-all"
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800">
+                                                    <img
+                                                        src={user.profilePhotoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                                                        alt={user.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-none">{user.name}</p>
+                                                    <div className="flex items-center gap-1.5 mt-1 text-slate-400 dark:text-slate-500">
+                                                        <Mail size={12} />
+                                                        <span className="text-xs">{user.email}</span>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${roleData.color}`}>
-                                                    <Shield size={10} />
-                                                    {roleData.label}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-2 text-slate-400">
-                                                    <Calendar size={14} />
-                                                    <span className="text-xs font-bold font-mono">2024.05.10</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-indigo-500 transition-all">
-                                                        <Lock size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(user.id)}
-                                                        className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-red-500 transition-all"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                    <div className="relative inline-block text-left">
-                                                        <button className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
-                                                            <MoreHorizontal size={16} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </motion.tr>
-                                    );
-                                })}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border transition-all ${getRoleStyle(user.userRole)}`}>
+                                                <Shield size={12} strokeWidth={2.5} />
+                                                {getRoleLabel(user.userRole)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                                                <CheckCircle2 size={14} />
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right overflow-visible">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <button
+                                                    onClick={() => handleDelete(user.id)}
+                                                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                                    title="Delete User"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                                <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">
+                                                    <MoreVertical size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                ))}
                             </AnimatePresence>
                         </tbody>
                     </table>
@@ -182,3 +182,4 @@ export default function UserManagement() {
         </div>
     );
 }
+

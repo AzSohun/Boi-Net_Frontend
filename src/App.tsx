@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+
 import Home from './Pages/Home';
 import About from './Pages/About';
 import Authors from './Pages/Authors';
@@ -93,7 +94,7 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Dashboard theme={theme} setTheme={setTheme} />
               </ProtectedRoute>
             }
           />
