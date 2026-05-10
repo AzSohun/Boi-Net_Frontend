@@ -1,15 +1,36 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import AuthLayout from '../Components/Auth/AuthLayout';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
+import { loginUser } from '../Services/authService';
 
 export default function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const navigate = useNavigate();
+    const { setAuth } = useAuth();
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setTimeout(() => setIsLoading(false), 2000);
+
+        setError("");
+
+        try {
+            const data = await loginUser({ email, password });
+            setAuth(data.user, data.accessToken);
+            navigate("/dashboard");
+        } catch (error: any) {
+            setError(error.response?.data || "Invalid Credential. Try Ageain")
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
