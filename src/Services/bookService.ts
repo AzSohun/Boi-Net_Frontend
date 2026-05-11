@@ -4,7 +4,7 @@ import type { Book } from "../types/book";
 export const bookService = {
     // Get All Books with optional filters
     getAllBooks: async (params?: any): Promise<Book[]> => {
-        const response = await axiosClient.get<Book[]>('/book', { params });
+        const response = await axiosClient.get<Book[]>('/book/all-books', { params });
         return response.data;
     },
 
@@ -22,7 +22,7 @@ export const bookService = {
 
     // Create Book
     createBook: async (formData: FormData): Promise<Book> => {
-        const response = await axiosClient.post<Book>('/book/create', formData, {
+        const response = await axiosClient.post<Book>('/book/add-data', formData, {
             headers: {
                 "Content-Type": "multipart/form-data"
             }
