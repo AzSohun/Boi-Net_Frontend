@@ -18,13 +18,17 @@ import {
 } from 'lucide-react';
 import { bookService } from '../../Services/bookService';
 import type { Book, CreateBookFormData } from '../../types/book';
+import { useFeedback } from '../UI/Feedback';
 
 export default function BookManagement() {
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBook, setEditingBook] = useState<Book | null>(null);
+    const { showToast, confirm } = useFeedback();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     const [formData, setFormData] = useState<CreateBookFormData>({
@@ -93,18 +97,33 @@ export default function BookManagement() {
     };
 
     const handleDelete = async (id: number) => {
-        if (window.confirm("Are you sure you want to delete this book? This action cannot be undone.")) {
+        const isConfirmed = await confirm({
+            title: 'Delete Book',
+            message: 'Are you sure you want to remove this book from the library? This action is irreversible.',
+            confirmLabel: 'Delete Now',
+            type: 'danger'
+        });
+
+        if (isConfirmed) {
+            setIsDeleting(id);
             try {
                 await bookService.deleteBook(id);
                 setBooks(prev => prev.filter(b => b.id !== id));
+                showToast('Book deleted successfully');
             } catch (error) {
                 console.error("Delete failed", error);
+                showToast('Failed to delete book', 'error');
+            } finally {
+                setIsDeleting(null);
             }
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
         const data = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
             if (value !== null && value !== undefined) {
@@ -116,13 +135,18 @@ export default function BookManagement() {
         try {
             if (editingBook) {
                 await bookService.updateBook(editingBook.id, data);
+                showToast('Book updated successfully');
             } else {
                 await bookService.createBook(data);
+                showToast('New book added to library');
             }
             fetchBooks();
             setIsModalOpen(false);
         } catch (error) {
             console.error("Submit failed", error);
+            showToast('Action failed. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -207,15 +231,26 @@ export default function BookManagement() {
                                     transition={{ delay: idx * 0.05 }}
                                     className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-900 hover:shadow-lg transition-all"
                                 >
-                                    <div className="aspect-[4/5] relative bg-slate-100 dark:bg-slate-800">
+                                    <div className="aspect-4/5 relative bg-slate-100 dark:bg-slate-800">
                                         {book.coverPhoto ? (
                                             <img src={book.coverPhoto} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><BookIcon size={48} /></div>
                                         )}
                                         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                                            <button onClick={() => handleOpenModal(book)} className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"><Edit2 size={16} /></button>
-                                            <button onClick={() => handleDelete(book.id)} className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-red-500 transition-all"><Trash2 size={16} /></button>
+                                            <button
+                                                onClick={() => handleOpenModal(book)}
+                                                className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(book.id)}
+                                                disabled={isDeleting === book.id}
+                                                className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-red-500 transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            >
+                                                {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                            </button>
                                         </div>
                                     </div>
                                     <div className="p-4 space-y-2">
@@ -251,8 +286,19 @@ export default function BookManagement() {
                                         <p className="text-xs font-bold text-slate-900 dark:text-white">${book.price}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <button onClick={() => handleOpenModal(book)} className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"><Edit2 size={16} /></button>
-                                        <button onClick={() => handleDelete(book.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"><Trash2 size={16} /></button>
+                                        <button
+                                            onClick={() => handleOpenModal(book)}
+                                            className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(book.id)}
+                                            disabled={isDeleting === book.id}
+                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
+                                        >
+                                            {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                        </button>
                                     </div>
                                 </div>
                             )
@@ -264,7 +310,7 @@ export default function BookManagement() {
             {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                             <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
@@ -322,9 +368,23 @@ export default function BookManagement() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">Cancel</button>
-                                    <button type="submit" className="flex-[2] py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-900/10 dark:shadow-none">Save Library Resource</button>
+                                <div className="flex gap-3 pt-6 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(false)}
+                                        disabled={isSubmitting}
+                                        className="flex-1 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-2 py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-900/10 dark:shadow-none disabled:opacity-70 flex items-center justify-center gap-2"
+                                    >
+                                        {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+                                        {isSubmitting ? 'Processing...' : (editingBook ? 'Update Resource' : 'Save Library Resource')}
+                                    </button>
                                 </div>
                             </form>
                         </motion.div>
