@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-    Users,
     Search,
     Trash2,
     Shield,
@@ -14,11 +13,15 @@ import {
 import { userService } from '../../Services/userService';
 import type { UserDto, RoleValue } from '../../types/auth';
 import { Role } from '../../types/auth';
+import { useFeedback } from '../UI/Feedback';
+import { Loader2 } from 'lucide-react';
 
 export default function UserManagement() {
     const [users, setUsers] = useState<UserDto[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const { showToast, confirm } = useFeedback();
 
     useEffect(() => {
         fetchUsers();
@@ -42,12 +45,24 @@ export default function UserManagement() {
     };
 
     const handleDelete = async (userId: string) => {
-        if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+        const isConfirmed = await confirm({
+            title: 'Delete User',
+            message: 'Are you sure you want to remove this user? They will lose all access immediately.',
+            confirmLabel: 'Delete User',
+            type: 'danger'
+        });
+
+        if (isConfirmed) {
+            setIsDeleting(userId);
             try {
                 await userService.deleteUser(userId);
                 setUsers(prev => prev.filter(u => u.id !== userId));
+                showToast('User deleted successfully');
             } catch (error) {
                 console.error("Deletion failed", error);
+                showToast('Failed to delete user', 'error');
+            } finally {
+                setIsDeleting(null);
             }
         }
     };
@@ -162,10 +177,11 @@ export default function UserManagement() {
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={() => handleDelete(user.id)}
-                                                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                                    disabled={isDeleting === user.id}
+                                                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
                                                     title="Delete User"
                                                 >
-                                                    <Trash2 size={18} />
+                                                    {isDeleting === user.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                                                 </button>
                                                 <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">
                                                     <MoreVertical size={18} />
