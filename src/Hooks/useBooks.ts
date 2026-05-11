@@ -1,7 +1,5 @@
-import { mutationOptions, useQuery, useQueryClient } from "@tanstack/react-query"
-import { bookService } from "../Services/bookService"
-
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { bookService } from "../Services/bookService";
 
 interface BookQueryParams {
     search?: string,
@@ -15,35 +13,28 @@ interface BookQueryParams {
     pagesize?: number
 }
 
-
 export const useGetAllBooks = (params: BookQueryParams) => {
-
     return useQuery({
         queryKey: ['books', params],
         queryFn: () => bookService.getAllBooks(params)
-    })
+    });
+};
 
-}
-
-
-
-export const useGetBookById = (id: number) => {
+export const useGetBookById = (id: number | string | undefined) => {
     return useQuery({
         queryKey: ['book', id],
-        queryFn: () => bookService.getBookById(id),
-        enabled: !!id // Id is missing. Then the API will not call.
-    })
-}
+        queryFn: () => bookService.getBookById(id as any),
+        enabled: !!id
+    });
+};
 
-
-
-export const useDeleteByBook = (id: number) => {
+export const useDeleteBook = () => {
     const queryClient = useQueryClient();
 
-    return mutationOptions({
+    return useMutation({
         mutationFn: (id: number) => bookService.deleteBook(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['book'] })
+            queryClient.invalidateQueries({ queryKey: ['books'] });
         }
-    })
-}
+    });
+};

@@ -1,7 +1,6 @@
 import { ShoppingBag } from 'lucide-react';
 import type { Book } from '../../types/book';
 
-
 interface ActionBarProps {
     book: Book;
 }
@@ -13,7 +12,7 @@ export default function ActionBar({ book }: ActionBarProps) {
                 <div className="pl-6 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">Full Edition</p>
                     <div className="flex items-center gap-3">
-                        <span className="text-3xl font-black text-white">${book.price.toFixed(2)}</span>
+                        <span className="text-3xl font-black text-white">${(book.price ?? 0).toFixed(2)}</span>
                         {!book.isAvailable && (
                             <span className="text-[10px] font-black uppercase px-3 py-1 bg-white/10 text-white/60 rounded-full tracking-widest">Sold Out</span>
                         )}
@@ -21,7 +20,7 @@ export default function ActionBar({ book }: ActionBarProps) {
                 </div>
                 <button
                     disabled={!book.isAvailable}
-                    className={`px-12 py-5 rounded-4xl font-black text-base uppercase tracking-widest flex items-center gap-4 transition-all active:scale-95 ${book.isAvailable ? 'bg-white text-slate-950 hover:bg-slate-100' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}
+                    className={`px-12 py-5 rounded-[2rem] font-black text-base uppercase tracking-widest flex items-center gap-4 transition-all active:scale-95 ${book.isAvailable ? 'bg-white text-slate-950 hover:bg-slate-100' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}
                 >
                     <ShoppingBag className="w-5 h-5" />
                     {book.isAvailable ? 'Acquire Now' : 'Join Waitlist'}

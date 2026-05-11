@@ -2,17 +2,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useGetBookById } from '../Hooks/useBooks';
+import EmptyState from '../Components/BookDetails/EmptyState';
 import BookCover from '../Components/BookDetails/BookCover';
 import BookInfo from '../Components/BookDetails/BookInfo';
 import ActionBar from '../Components/BookDetails/ActionBar';
-import EmptyState from '../Components/BookDetails/EmptyState';
-
 
 export default function BookDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data: book, isLoading, isError } = useGetBookById(Number(id));
+    const { data: rawBook, isLoading, isError } = useGetBookById(id);
+
+    // Handle potential API response wrapping (e.g., { data: book }) or array response
+    let book = rawBook && 'data' in (rawBook as any) ? (rawBook as any).data : rawBook;
+    if (Array.isArray(book)) {
+        book = book[0];
+    }
 
     if (isLoading) {
         return (

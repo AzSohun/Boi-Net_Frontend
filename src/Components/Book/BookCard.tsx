@@ -17,7 +17,7 @@ export default function BookCard({ book, index }: BookCardProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (index % 3) * 0.1, duration: 0.6 }}
-            onClick={() => navigate(`/book/${book.id}`)}
+            onClick={() => navigate(`/books/${book.id}`)}
             className="group cursor-pointer"
         >
             <div className="relative aspect-3/4 rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-xl group-hover:shadow-indigo-500/10 transition-all duration-700 border border-slate-100 dark:border-slate-800">
@@ -40,7 +40,7 @@ export default function BookCard({ book, index }: BookCardProps) {
                             {book.description}
                         </p>
                         <div className="flex items-center justify-between">
-                            <span className="text-white font-black text-3xl tracking-tighter">${book.price.toFixed(2)}</span>
+                            <span className="text-white font-black text-3xl tracking-tighter">${(book.price ?? 0).toFixed(2)}</span>
                             <button className="p-4 bg-indigo-600 text-white rounded-2xl hover:bg-white hover:text-indigo-600 transition-all active:scale-95 shadow-xl">
                                 <ShoppingBag className="w-5 h-5" />
                             </button>
@@ -50,7 +50,7 @@ export default function BookCard({ book, index }: BookCardProps) {
 
                 <div className="absolute top-6 right-6 z-10 px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl font-black text-slate-900 dark:text-white shadow-lg group-hover:opacity-0 transition-opacity flex items-center gap-2 text-sm tracking-tight">
                     <span className="text-indigo-600 text-xs font-black">$</span>
-                    {book.price.toFixed(2)}
+                    {(book.price ?? 0).toFixed(2)}
                 </div>
             </div>
 

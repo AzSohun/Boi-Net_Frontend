@@ -1,7 +1,6 @@
 import { Star, BookOpen, Calendar, Globe, Hash } from 'lucide-react';
-import type { Book } from '../../types/book';
 import DetailItem from './DetailItem';
-
+import type { Book } from '../../types/book';
 
 interface BookInfoProps {
     book: Book;
@@ -57,7 +56,7 @@ export default function BookInfo({ book }: BookInfoProps) {
             {/* Metadata Intelligence */}
             <div className="grid sm:grid-cols-2 gap-6">
                 <DetailItem icon={BookOpen} label="Vol. Size" value={`${book.pageCount} Pages`} />
-                <DetailItem icon={Calendar} label="Circulation" value={book.publishedDate} />
+                <DetailItem icon={Calendar} label="Circulation" value={book.publishDate} />
                 <DetailItem icon={Globe} label="Registry" value={book.publisher} />
                 <DetailItem icon={Hash} label="Catalog ID" value={book.isbn} />
             </div>
