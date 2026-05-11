@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     LayoutDashboard,
@@ -219,7 +219,7 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
     );
 }
 
-function Overview({ user, isManagement, setActiveSection }: OverviewProps) {
+function Overview({ user, setActiveSection }: OverviewProps) {
     return (
         <div className="space-y-8">
             <div>
@@ -292,7 +292,7 @@ function Overview({ user, isManagement, setActiveSection }: OverviewProps) {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-indigo-600 p-8 rounded-[2rem] text-white space-y-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
+                    <div className="bg-indigo-600 p-8 rounded-4xl text-white space-y-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10 blur-2xl" />
                         <div className="relative z-10">
                             <h3 className="text-xl font-bold">Manage Resources</h3>
