@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 
 import Home from './Pages/Home';
 import About from './Pages/About';
@@ -33,13 +33,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 type Theme = 'light' | 'dark' | 'system';
 
 function Layout({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) => void }) {
+  const { pathname } = useLocation();
+  const isAuthPage = pathname === '/login' || pathname === '/register';
+
   return (
     <div className="min-h-screen bg-[#FDFCFB] dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-indigo-100 dark:selection:bg-indigo-900 selection:text-indigo-900 dark:selection:text-indigo-100 overflow-x-hidden transition-colors duration-500">
-      <Navbar theme={theme} setTheme={setTheme} />
+      {!isAuthPage && <Navbar theme={theme} setTheme={setTheme} />}
       <main>
         <Outlet />
       </main>
-      <Footer />
+      {!isAuthPage && <Footer />}
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../Services/authService';
+import { useAuth } from '../Context/AuthContext';
 import AuthLayout from '../Components/Auth/AuthLayout';
 
 export default function Register() {
@@ -14,6 +15,13 @@ export default function Register() {
     const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
+    const { accessToken } = useAuth();
+
+    useEffect(() => {
+        if (accessToken) {
+            navigate('/dashboard');
+        }
+    }, [accessToken, navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

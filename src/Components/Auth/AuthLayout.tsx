@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Library } from 'lucide-react';
+import { Library, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface AuthLayoutProps {
@@ -13,6 +13,14 @@ interface AuthLayoutProps {
 export default function AuthLayout({ children, title, subtitle, type }: AuthLayoutProps) {
     return (
         <div className="min-h-screen bg-white dark:bg-[#02040a] flex flex-col lg:flex-row relative overflow-hidden">
+            {/* Back to Home Button */}
+            <Link
+                to="/"
+                className="absolute top-8 right-8 z-50 flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 shadow-xl transition-all hover:scale-105 active:scale-95"
+            >
+                <ArrowLeft className="w-3 h-3" />
+                Back to Home
+            </Link>
             {/* Dynamic Background Elements */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-600/10 blur-[150px] rounded-full animate-pulse" />
