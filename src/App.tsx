@@ -17,6 +17,7 @@ import Footer from './Components/shared/Footer';
 import ScrollToTop from './Components/shared/ScrollToTop';
 import Books from './Pages/Book';
 import { FeedbackProvider } from './Components/UI/Feedback';
+import { AxiosInterceptor } from './Components/shared/AxiosInterceptor';
 
 // --- Protected Route ---
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -78,29 +79,31 @@ export default function App() {
     <AuthProvider>
       <FeedbackProvider>
         <BrowserRouter>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Layout theme={theme} setTheme={setTheme} />}>
-              <Route index element={<Home />} />
-              <Route path="about" element={<About />} />
-              <Route path="books" element={<Books />} />
-              <Route path="authors" element={<Authors />} />
-              <Route path="community" element={<Community />} />
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
-              <Route path="books/:id" element={<BookDetails />} />
-              <Route path="privacy" element={<Privacy />} />
-              <Route path="contact" element={<Contact />} />
-            </Route>
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard theme={theme} setTheme={setTheme} />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+          <AxiosInterceptor>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Layout theme={theme} setTheme={setTheme} />}>
+                <Route index element={<Home />} />
+                <Route path="about" element={<About />} />
+                <Route path="books" element={<Books />} />
+                <Route path="authors" element={<Authors />} />
+                <Route path="community" element={<Community />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="books/:id" element={<BookDetails />} />
+                <Route path="privacy" element={<Privacy />} />
+                <Route path="contact" element={<Contact />} />
+              </Route>
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard theme={theme} setTheme={setTheme} />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </AxiosInterceptor>
         </BrowserRouter>
       </FeedbackProvider>
     </AuthProvider>
