@@ -1,10 +1,8 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 
 
 const BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:7293/api";
-const navigate = useNavigate();
 
 export const axiosClient = axios.create({
     baseURL: BASE_URL,
@@ -33,7 +31,6 @@ axiosClient.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             console.error("Authentication failed. Please Login");
-            navigate("/login");
         }
         return Promise.reject(error);
     }

@@ -34,8 +34,8 @@ export default function Login() {
 
     return (
         <AuthLayout
-            title="Access Node"
-            subtitle="Re-establish your connection to the collective."
+            title="Welcome Back"
+            subtitle="Sign in to continue your reading adventure."
             type="login"
         >
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -65,7 +65,7 @@ export default function Login() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="identity@network.io"
+                                placeholder="reader@boinet.io"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-transparent border-b-slate-100 dark:border-b-slate-800 rounded-xl py-4 pl-12 pr-5 outline-none focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-950 transition-all font-bold text-slate-950 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800"
                             />
                         </div>
@@ -74,7 +74,7 @@ export default function Login() {
                     <div className="space-y-2">
                         <div className="flex items-center justify-between ml-1">
                             <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">Password</label>
-                            <button type="button" className="text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:text-slate-950 dark:hover:text-white transition-colors">Reset Secret</button>
+                            <button type="button" className="text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:text-slate-950 dark:hover:text-white transition-colors">Forgot Password?</button>
                         </div>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
@@ -107,7 +107,7 @@ export default function Login() {
                         <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                         <>
-                            Execute Authorization
+                            Sign In to BoiNet
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </>
                     )}
@@ -118,7 +118,7 @@ export default function Login() {
                         <div className="w-full border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
                     <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.4em]">
-                        <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-600">Cross-Node Sync</span>
+                        <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-600">Or Continue With</span>
                     </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Fingerprint } from 'lucide-react';
+import { Library } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface AuthLayoutProps {
@@ -25,8 +25,8 @@ export default function AuthLayout({ children, title, subtitle, type }: AuthLayo
             <div className="hidden lg:flex lg:w-[45%] bg-slate-950 dark:bg-[#05070a] relative overflow-hidden items-center justify-center p-20 border-r border-white/5">
                 <div className="absolute inset-0">
                     <img
-                        src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2000"
-                        alt=""
+                        src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2000"
+                        alt="Library"
                         className="w-full h-full object-cover opacity-20 grayscale scale-110 motion-safe:animate-[subtle-zoom_20s_infinite_alternate]"
                     />
                     <div className="absolute inset-0 bg-linear-to-br from-indigo-600/20 via-transparent to-slate-950" />
@@ -42,24 +42,24 @@ export default function AuthLayout({ children, title, subtitle, type }: AuthLayo
                         <div className="w-16 h-1 bg-indigo-600" />
                         <h2 className="text-8xl font-black text-white tracking-tighter leading-[0.8] uppercase italic font-serif">
                             The <br />
-                            Digital <br />
-                            <span className="text-indigo-500 lowercase not-italic font-sans">Threshold.</span>
+                            World of <br />
+                            <span className="text-indigo-500 lowercase not-italic font-sans">Stories.</span>
                         </h2>
                     </div>
 
                     <p className="text-slate-400 text-sm font-medium tracking-wide max-w-sm leading-relaxed border-l-2 border-indigo-600 pl-6">
-                        Integrating your consciousness into the global narrative layer. Access granted via secure bi-lateral synchronization.
+                        Discover thousands of books, connect with fellow readers, and build your personal digital library in the most connected literary network.
                     </p>
 
                     <div className="pt-12 flex items-center gap-6">
                         <div className="flex -space-x-4">
                             {[1, 2, 3].map((i) => (
                                 <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-950 bg-slate-800 overflow-hidden ring-4 ring-indigo-500/10">
-                                    <img src={`https://i.pravatar.cc/100?u=${i + 10}`} alt="" />
+                                    <img src={`https://i.pravatar.cc/100?u=${i + 20}`} alt="" />
                                 </div>
                             ))}
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Verified Nodes Online</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Readers Online Now</span>
                     </div>
                 </motion.div>
             </div>
@@ -74,7 +74,7 @@ export default function AuthLayout({ children, title, subtitle, type }: AuthLayo
                                 animate={{ rotate: 0, scale: 1 }}
                                 className="w-14 h-14 bg-indigo-600 rounded-[1.25rem] flex items-center justify-center text-white shadow-2xl shadow-indigo-600/30 group"
                             >
-                                <Fingerprint className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                                <Library className="w-7 h-7 group-hover:scale-110 transition-transform" />
                             </motion.div>
                             <div className="space-y-2">
                                 <h1 className="text-5xl font-black text-slate-950 dark:text-white tracking-tighter uppercase leading-none">
@@ -92,13 +92,13 @@ export default function AuthLayout({ children, title, subtitle, type }: AuthLayo
 
                         <div className="text-center">
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                {type === 'login' ? "New Identity required?" : "Active Node registered?"}
+                                {type === 'login' ? "Don't have an account?" : "Already a member?"}
                                 {' '}
                                 <Link
                                     to={type === 'login' ? '/register' : '/login'}
                                     className="text-indigo-600 font-black hover:text-slate-950 dark:hover:text-white transition-colors border-b-2 border-indigo-600 pb-0.5 ml-2"
                                 >
-                                    {type === 'login' ? "Initialize profile" : "Return to Node"}
+                                    {type === 'login' ? "Create Account" : "Sign In"}
                                 </Link>
                             </p>
                         </div>
@@ -107,8 +107,8 @@ export default function AuthLayout({ children, title, subtitle, type }: AuthLayo
 
                 {/* Subtle Branding Bottom */}
                 <div className="hidden lg:flex items-center justify-between mt-auto pt-12 text-[9px] font-black uppercase tracking-[0.4em] text-slate-300 dark:text-slate-800">
-                    <span>BoiNet // Unified Auth</span>
-                    <span>Version 4.2.0-SEC</span>
+                    <span>BoiNet // Reader Auth</span>
+                    <span>Since 2024</span>
                 </div>
             </div>
         </div>
