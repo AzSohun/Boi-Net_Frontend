@@ -20,3 +20,11 @@ export interface OrderResponse {
 export interface PaymentIntentResponse {
     clientSecret: string;
 }
+
+
+export interface PurchasedBook {
+    bookId: number;
+    title: string;
+    author: string;
+    coverPhoto: string;
+}

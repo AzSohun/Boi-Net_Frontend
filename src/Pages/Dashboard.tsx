@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     LayoutDashboard,
@@ -20,16 +20,20 @@ import {
     Sun,
     Moon,
     Monitor,
+    Loader2,
+    Sparkles,
     type LucideIcon
 } from 'lucide-react';
-import { useAuth } from '../Context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { checkRole, type UserDto } from '../types/auth';
+import type { PurchasedBook } from '../types/checkout';
+import { CheckoutService } from '../Services/checkoutService';
+import { useAuth } from '../Context/AuthContext';
 import BookManagement from '../Components/Dashboard/BookManagement';
 import UserManagement from '../Components/Dashboard/UserManagement';
 
 
-type DashboardSection = 'overview' | 'users' | 'library' | 'analytics' | 'settings' | 'profile' | 'wishlist';
+type DashboardSection = 'overview' | 'users' | 'library' | 'analytics' | 'settings' | 'profile' | 'wishlist' | 'management';
 
 // Import new components
 interface UserProfileProps {
@@ -95,6 +99,97 @@ const UserWishlist = () => (
         </div>
     </div>
 );
+
+const MyLibrary = () => {
+    const [books, setBooks] = useState<PurchasedBook[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const data = await CheckoutService.getMyPurchasedBooks();
+                setBooks(data);
+            } catch (err) {
+                console.error("Failed to load library:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBooks();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.4em]">Decrypting Vault Contents...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-12 border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div className="space-y-4">
+                    <h2 className="text-4xl font-black text-slate-950 dark:text-white uppercase tracking-tighter italic underline decoration-indigo-600 decoration-8 underline-offset-8">My Library</h2>
+                    <p className="text-slate-500 font-bold max-w-lg">Your acquired assets on BoiNet. These protocols are permanently assigned to your profile.</p>
+                </div>
+                <div className="flex items-center gap-2 px-6 py-3 bg-indigo-50 dark:bg-indigo-500/5 rounded-full border border-indigo-100 dark:border-indigo-900/50">
+                    <Sparkles className="w-4 h-4 text-indigo-600" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">{books.length} Total Assets</span>
+                </div>
+            </div>
+
+            {books.length === 0 ? (
+                <div className="py-24 text-center space-y-6">
+                    <div className="w-24 h-24 bg-slate-50 dark:bg-slate-950 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-slate-200 dark:border-slate-800">
+                        <BookOpen className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-slate-950 dark:text-white">Vault Empty</h3>
+                        <p className="text-slate-400 text-sm font-medium">You haven't initialized any acquisitions yet.</p>
+                    </div>
+                    <Link
+                        to="/books"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-950 dark:hover:bg-white dark:hover:text-black transition-all"
+                    >
+                        Explore Data Hub
+                    </Link>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {books.map(book => (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            key={book.bookId}
+                            className="group"
+                        >
+                            <div className="aspect-2/3 bg-slate-100 dark:bg-slate-800 rounded-3xl overflow-hidden mb-6 relative shadow-xl transform transition-all group-hover:-translate-y-2 group-hover:shadow-indigo-500/20 ring-1 ring-slate-200 dark:ring-slate-800">
+                                <img
+                                    src={book.coverPhoto}
+                                    alt={book.title}
+                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
+                                />
+                                <div className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors pointer-events-none" />
+
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="px-8 py-4 bg-white text-slate-950 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                        Decrypt & Read
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="font-black text-lg text-slate-950 dark:text-white uppercase leading-none tracking-tighter truncate">{book.title || (book as any).Title}</h3>
+                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest truncate">{book.author || (book as any).Author}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 type Theme = 'light' | 'dark' | 'system';
 
 interface OverviewProps {
@@ -129,14 +224,15 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
     const navItems = isManagement ? [
         { id: 'overview', icon: LayoutDashboard, label: 'Control Center' },
         { id: 'users', icon: Users, label: 'User Network' },
-        { id: 'library', icon: BookOpen, label: 'Book Vault' },
+        { id: 'management', icon: Database, label: 'Manage Books' },
+        { id: 'library', icon: BookOpen, label: 'My Library' },
         { id: 'analytics', icon: BarChart, label: 'Global Stats' },
         { id: 'settings', icon: Settings, label: 'System Prefs' },
     ] : [
         { id: 'overview', icon: LayoutDashboard, label: 'My Hub' },
         { id: 'profile', icon: Users, label: 'My Identity' },
         { id: 'wishlist', icon: Database, label: 'Wishlist' },
-        { id: 'library', icon: BookOpen, label: 'BoiNet Explorer' },
+        { id: 'library', icon: BookOpen, label: 'My Library' },
         { id: 'settings', icon: Settings, label: 'Preferences' },
     ];
 
@@ -286,11 +382,12 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
                                 exit={{ opacity: 0, y: -5 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {activeSection === 'library' ? <BookManagement /> :
-                                    activeSection === 'users' ? <UserManagement /> :
-                                        activeSection === 'profile' ? <UserProfile user={user} /> :
-                                            activeSection === 'wishlist' ? <UserWishlist /> :
-                                                <Overview user={user} isManagement={isManagement} setActiveSection={setActiveSection} />}
+                                {activeSection === 'library' ? <MyLibrary /> :
+                                    activeSection === 'management' ? <BookManagement /> :
+                                        activeSection === 'users' ? <UserManagement /> :
+                                            activeSection === 'profile' ? <UserProfile user={user} /> :
+                                                activeSection === 'wishlist' ? <UserWishlist /> :
+                                                    <Overview user={user} isManagement={isManagement} setActiveSection={setActiveSection} />}
                             </motion.div>
                         </AnimatePresence>
                     </div>

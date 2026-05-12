@@ -6,5 +6,43 @@
   --font-display: "Playfair Display", serif;
 }
 
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .dark &::-webkit-scrollbar-thumb {
+    background: #334155;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #6366f1;
+    /* Indigo-500 */
+  }
+}
+
+/* Apply scrollbar globally */
+@layer base {
+
+  html,
+  body {
+    @apply custom-scrollbar;
+  }
+}
+
+
 /* This allows the 'dark:' variant to work when the 'dark' class is on <html> */
 @variant dark (&:where(.dark, .dark *));

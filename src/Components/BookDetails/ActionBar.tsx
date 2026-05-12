@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ShoppingBag, Loader2, Sparkles } from 'lucide-react';
+import { CheckoutService } from '../../Services/checkoutService';
 import { motion, AnimatePresence } from 'motion/react';
 import type { Book } from '../../types/book';
-import { CheckoutService } from '../../Services/checkoutService';
 import { PaymentModal } from '../Checkout/PaymentModel';
 
 interface ActionBarProps {

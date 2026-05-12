@@ -6,6 +6,8 @@ import { X, ShieldCheck, Loader2 } from 'lucide-react';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
+const isDarkMode = () => document.documentElement.classList.contains('dark');
+
 interface CheckoutFormProps {
     onClose: () => void;
 }
@@ -37,45 +39,47 @@ const CheckoutForm = ({ onClose }: CheckoutFormProps) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <PaymentElement
-                    options={{
-                        layout: 'accordion',
-                    }}
-                />
+        <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="bg-slate-50/50 dark:bg-slate-900/50 p-1 rounded-4xl border border-slate-100 dark:border-slate-800/50 overflow-hidden">
+                <div className="p-6">
+                    <PaymentElement
+                        options={{
+                            layout: 'accordion',
+                        }}
+                    />
+                </div>
             </div>
 
             {errorMessage && (
                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wider text-center"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest text-center"
                 >
                     {errorMessage}
                 </motion.div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-slate-200 dark:hover:bg-slate-700 transition-all hover:scale-[1.02] active:scale-95"
+                    className="flex-1 px-8 py-5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                 >
                     Abandon
                 </button>
                 <button
                     type="submit"
                     disabled={!stripe || isPaying}
-                    className="flex-1 px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                    className="flex-1 px-8 py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-indigo-600/30 hover:bg-indigo-700 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
                 >
                     {isPaying ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Processing
+                            Authorizing
                         </>
                     ) : (
-                        'Verify & Acquire'
+                        'Confirm Acquisition'
                     )}
                 </button>
             </div>
@@ -111,7 +115,7 @@ export const PaymentModal = ({ clientSecret, onClose, bookTitle, price }: Paymen
                     initial={{ scale: 0.9, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                    className="relative max-w-xl w-full bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden shadow-indigo-500/10"
+                    className="relative max-w-xl w-full bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-y-auto max-h-[90vh] shadow-indigo-500/10 custom-scrollbar"
                 >
                     <div className="p-8 md:p-12">
                         <div className="flex items-center justify-between mb-12">
@@ -143,11 +147,30 @@ export const PaymentModal = ({ clientSecret, onClose, bookTitle, price }: Paymen
                         <Elements stripe={stripePromise} options={{
                             clientSecret,
                             appearance: {
-                                theme: 'stripe',
+                                theme: isDarkMode() ? 'night' : 'stripe',
                                 variables: {
                                     colorPrimary: '#4f46e5',
-                                    colorBackground: 'transparent',
-                                    borderRadius: '12px'
+                                    colorBackground: isDarkMode() ? '#0f172a' : '#ffffff',
+                                    colorText: isDarkMode() ? '#f8fafc' : '#1e293b',
+                                    colorDanger: '#ef4444',
+                                    fontFamily: 'Inter, system-ui, sans-serif',
+                                    spacingUnit: '4px',
+                                    borderRadius: '16px',
+                                },
+                                rules: {
+                                    '.Input': {
+                                        border: '1px solid',
+                                        borderColor: isDarkMode() ? '#1e293b' : '#e2e8f0',
+                                        padding: '12px 16px',
+                                    },
+                                    '.Label': {
+                                        fontWeight: '600',
+                                        textTransform: 'uppercase',
+                                        fontSize: '10px',
+                                        letterSpacing: '0.1em',
+                                        color: isDarkMode() ? '#94a3b8' : '#64748b',
+                                        marginBottom: '8px'
+                                    }
                                 }
                             }
                         }}>
