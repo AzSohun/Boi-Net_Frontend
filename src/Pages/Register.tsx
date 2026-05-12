@@ -46,7 +46,7 @@ export default function Register() {
                             exit={{ opacity: 0, y: -10 }}
                             className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-xs font-bold"
                         >
-                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                            <AlertCircle className="w-4 h-4 shrink-0" />
                             {error}
                         </motion.div>
                     )}

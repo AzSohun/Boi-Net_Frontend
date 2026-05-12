@@ -19,8 +19,16 @@ import {
 import { bookService } from '../../Services/bookService';
 import type { Book, CreateBookFormData } from '../../types/book';
 import { useFeedback } from '../UI/Feedback';
+import { useAuth } from '../../Context/AuthContext';
+
+import { checkRole } from '../../types/auth';
 
 export default function BookManagement() {
+    const { user } = useAuth();
+    const isSuperAdmin = checkRole(user, 'SuperAdmin');
+    const isAdmin = checkRole(user, 'Admin');
+    const isManagement = isSuperAdmin || isAdmin;
+
     const [books, setBooks] = useState<Book[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +61,7 @@ export default function BookManagement() {
         setLoading(true);
         try {
             const data = await bookService.getAllBooks();
-            setBooks(data);
+            setBooks(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Failed to fetch books", error);
         } finally {
@@ -173,13 +181,15 @@ export default function BookManagement() {
                             <ListIcon size={18} />
                         </button>
                     </div>
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-sm"
-                    >
-                        <Plus size={18} />
-                        Add Book
-                    </button>
+                    {isManagement && (
+                        <button
+                            onClick={() => handleOpenModal()}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-sm"
+                        >
+                            <Plus size={18} />
+                            Add Book
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -237,21 +247,23 @@ export default function BookManagement() {
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><BookIcon size={48} /></div>
                                         )}
-                                        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                                            <button
-                                                onClick={() => handleOpenModal(book)}
-                                                className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(book.id)}
-                                                disabled={isDeleting === book.id}
-                                                className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-red-500 transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            >
-                                                {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                            </button>
-                                        </div>
+                                        {isManagement && (
+                                            <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                                                <button
+                                                    onClick={() => handleOpenModal(book)}
+                                                    className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(book.id)}
+                                                    disabled={isDeleting === book.id}
+                                                    className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-red-500 transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                >
+                                                    {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="p-4 space-y-2">
                                         <div>
@@ -285,21 +297,23 @@ export default function BookManagement() {
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-50 uppercase tracking-wider">Price</p>
                                         <p className="text-xs font-bold text-slate-900 dark:text-white">${book.price}</p>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => handleOpenModal(book)}
-                                            className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(book.id)}
-                                            disabled={isDeleting === book.id}
-                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
-                                        >
-                                            {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                        </button>
-                                    </div>
+                                    {isManagement && (
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleOpenModal(book)}
+                                                className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(book.id)}
+                                                disabled={isDeleting === book.id}
+                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
+                                            >
+                                                {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )
                         ))}

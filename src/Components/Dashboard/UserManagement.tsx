@@ -12,16 +12,23 @@ import {
 } from 'lucide-react';
 import { userService } from '../../Services/userService';
 import type { UserDto, RoleValue } from '../../types/auth';
-import { Role } from '../../types/auth';
+import { Role, checkRole } from '../../types/auth';
 import { useFeedback } from '../UI/Feedback';
 import { Loader2 } from 'lucide-react';
 
+import { useAuth } from '../../Context/AuthContext';
+
 export default function UserManagement() {
+    const { user: currentUser } = useAuth();
     const [users, setUsers] = useState<UserDto[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
+    const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const { showToast, confirm } = useFeedback();
+
+    const isSuperAdmin = checkRole(currentUser, 'SuperAdmin');
+    const isAdmin = checkRole(currentUser, 'Admin');
 
     useEffect(() => {
         fetchUsers();
@@ -34,14 +41,37 @@ export default function UserManagement() {
             setUsers(data);
         } catch (error) {
             console.error("Failed to fetch users", error);
-            setUsers([
-                { id: '1', name: 'Admin Zero', email: 'admin@boinet.com', userRole: Role.SuperAdmin, profilePhotoUrl: '', wishlist: [] },
-                { id: '2', name: 'Alice Explorer', email: 'alice@test.com', userRole: Role.User, profilePhotoUrl: '', wishlist: [] },
-                { id: '3', name: 'Bob Curator', email: 'bob@test.com', userRole: Role.Admin, profilePhotoUrl: '', wishlist: [] },
-            ]);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRoleChange = async (userId: string, targetRole: RoleValue) => {
+        setIsUpdatingRole(userId);
+        try {
+            await userService.updateUserRole(userId, targetRole);
+            showToast(`Role updated to ${getRoleLabel(targetRole)}`);
+            fetchUsers();
+        } catch (error) {
+            showToast('Role update failed', 'error');
+        } finally {
+            setIsUpdatingRole(null);
+        }
+    };
+
+    const canManage = (targetUser: UserDto) => {
+        const currentUserId = currentUser?.id ?? (currentUser as any)?.Id;
+        const targetUserId = targetUser.id ?? (targetUser as any)?.id; // backend uses lower 'id' in UserDto but pascal 'Id' in profile response
+
+        if (isSuperAdmin) {
+            // Superadmin cannot delete themselves, but can manage everyone else
+            return targetUserId !== currentUserId;
+        }
+        if (isAdmin) {
+            // Admin can only manage Users or other Admins, but NOT SuperAdmins
+            return !checkRole(targetUser, 'SuperAdmin') && targetUserId !== currentUserId;
+        }
+        return false;
     };
 
     const handleDelete = async (userId: string) => {
@@ -73,14 +103,16 @@ export default function UserManagement() {
     );
 
     const getRoleStyle = (role: RoleValue) => {
-        if (role === Role.SuperAdmin) return 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-900/50';
-        if (role === Role.Admin) return 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50';
+        const dummyUser = { userRole: role };
+        if (checkRole(dummyUser, 'SuperAdmin')) return 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-900/50';
+        if (checkRole(dummyUser, 'Admin')) return 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50';
         return 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-900/50';
     };
 
     const getRoleLabel = (role: RoleValue) => {
-        if (role === Role.SuperAdmin) return 'Super Admin';
-        if (role === Role.Admin) return 'Curator';
+        const dummyUser = { userRole: role };
+        if (checkRole(dummyUser, 'SuperAdmin')) return 'Super Admin';
+        if (checkRole(dummyUser, 'Admin')) return 'Curator';
         return 'Explorer';
     };
 
@@ -175,14 +207,42 @@ export default function UserManagement() {
                                         </td>
                                         <td className="px-6 py-4 text-right overflow-visible">
                                             <div className="flex items-center justify-end gap-1">
-                                                <button
-                                                    onClick={() => handleDelete(user.id)}
-                                                    disabled={isDeleting === user.id}
-                                                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
-                                                    title="Delete User"
-                                                >
-                                                    {isDeleting === user.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                                                </button>
+                                                {canManage(user) ? (
+                                                    <>
+                                                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mr-2">
+                                                            {!checkRole(user, 'User') && (
+                                                                <button
+                                                                    onClick={() => handleRoleChange(user.id, Role.User)}
+                                                                    disabled={isUpdatingRole === user.id}
+                                                                    className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-blue-600 transition-colors"
+                                                                >
+                                                                    Set User
+                                                                </button>
+                                                            )}
+                                                            {!checkRole(user, 'Admin') && (
+                                                                <button
+                                                                    onClick={() => handleRoleChange(user.id, Role.Admin)}
+                                                                    disabled={isUpdatingRole === user.id}
+                                                                    className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-indigo-600 transition-colors"
+                                                                >
+                                                                    Set Admin
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDelete(user.id)}
+                                                            disabled={isDeleting === user.id}
+                                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
+                                                            title="Delete User"
+                                                        >
+                                                            {isDeleting === user.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <div className="px-3 py-1 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                        <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">Locked</span>
+                                                    </div>
+                                                )}
                                                 <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">
                                                     <MoreVertical size={18} />
                                                 </button>

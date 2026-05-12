@@ -24,11 +24,77 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Role, type UserDto } from '../types/auth'
+import { checkRole, type UserDto } from '../types/auth';
 import BookManagement from '../Components/Dashboard/BookManagement';
 import UserManagement from '../Components/Dashboard/UserManagement';
 
-type DashboardSection = 'overview' | 'users' | 'library' | 'analytics' | 'settings';
+
+type DashboardSection = 'overview' | 'users' | 'library' | 'analytics' | 'settings' | 'profile' | 'wishlist';
+
+// Import new components
+interface UserProfileProps {
+    user: UserDto | null;
+}
+
+const UserProfile = ({ user }: UserProfileProps) => {
+    const normalized = {
+        name: user?.name ?? (user as any)?.Name ?? 'User',
+        photo: user?.profilePhotoUrl ?? (user as any)?.ProfilePhotoUrl ?? (user as any)?.profilePhotoUrl,
+        id: user?.id ?? (user as any)?.Id ?? (user as any)?.id
+    };
+
+    return (
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-12 border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <h2 className="text-4xl font-black text-slate-950 dark:text-white uppercase tracking-tighter italic mb-6 underline decoration-indigo-600 decoration-8 underline-offset-8">My Identity</h2>
+            <p className="text-slate-500 font-bold max-w-lg mb-12">Update your presence on BoiNet. Your security and privacy are our top protocols.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                    <div className="space-y-4">
+                        <label className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600">Universal Name</label>
+                        <input className="w-full bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 font-bold text-lg outline-none focus:border-indigo-600 transition-all" defaultValue={normalized.name} />
+                    </div>
+                    <div className="space-y-4">
+                        <label className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600">Bio / Description</label>
+                        <textarea rows={4} className="w-full bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 font-bold text-lg outline-none focus:border-indigo-600 transition-all" defaultValue="Avid reader and explorer of digital narratives." />
+                    </div>
+                </div>
+                <div className="space-y-8">
+                    <div className="flex flex-col items-center p-8 bg-indigo-50 dark:bg-indigo-500/5 rounded-3xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/50">
+                        <div className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-2xl bg-white mb-6 overflow-hidden">
+                            <img src={normalized.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${normalized.id}`} className="w-full h-full object-cover" />
+                        </div>
+                        <button className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-slate-950 dark:hover:bg-white dark:hover:text-black transition-all">Update Avatar</button>
+                    </div>
+                    <div className="p-6 bg-red-50 dark:bg-red-500/5 rounded-2xl border-2 border-red-100 dark:border-red-900/30">
+                        <h4 className="font-black text-red-600 uppercase text-xs tracking-widest mb-2">Danger Zone</h4>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase mb-4 tracking-tighter">Your data is yours. Request deletion from BoiNet protocols.</p>
+                        <button className="text-red-600 font-black text-xs uppercase underline decoration-2 underline-offset-4 hover:text-red-700 transition-colors">Request Account Deletion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const UserWishlist = () => (
+    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-12 border border-slate-200 dark:border-slate-800 shadow-2xl">
+        <h2 className="text-4xl font-black text-slate-950 dark:text-white uppercase tracking-tighter italic mb-6 underline decoration-indigo-600 decoration-8 underline-offset-8">My Reserve</h2>
+        <p className="text-slate-500 font-bold max-w-lg mb-12">Books you've marked for future exploration. Reserved exclusively for your access.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map(i => (
+                <div key={i} className="group cursor-pointer">
+                    <div className="aspect-2/3 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden mb-4 relative shadow-xl transform transition-all group-hover:-translate-y-2 group-hover:shadow-indigo-500/20">
+                        <img src={`https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400&u=${i}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    </div>
+                    <h3 className="font-black text-lg text-slate-950 dark:text-white uppercase leading-none tracking-tighter">The Lost Protocol {i}</h3>
+                    <p className="text-xs font-bold text-indigo-600 uppercase mt-2 tracking-widest">James S.A. Corey</p>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 type Theme = 'light' | 'dark' | 'system';
 
 interface OverviewProps {
@@ -49,18 +115,29 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
         navigate('/login');
     };
 
-    const isManagement = user?.userRole === Role.SuperAdmin || user?.userRole === Role.Admin;
+    const isSuperAdmin = checkRole(user, 'SuperAdmin');
+    const isAdmin = checkRole(user, 'Admin');
+    const isManagement = isSuperAdmin || isAdmin;
+
+    // Normalized user data
+    const normalizedUser = {
+        name: user?.name ?? (user as any)?.Name ?? (user as any)?.name ?? 'User',
+        photo: user?.profilePhotoUrl ?? (user as any)?.ProfilePhotoUrl ?? (user as any)?.profilePhotoUrl,
+        id: user?.id ?? (user as any)?.Id ?? (user as any)?.id
+    };
 
     const navItems = isManagement ? [
-        { id: 'overview', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'users', icon: Users, label: 'Users' },
-        { id: 'library', icon: BookOpen, label: 'Books' },
-        { id: 'analytics', icon: BarChart, label: 'Analytics' },
-        { id: 'settings', icon: Settings, label: 'Settings' },
+        { id: 'overview', icon: LayoutDashboard, label: 'Control Center' },
+        { id: 'users', icon: Users, label: 'User Network' },
+        { id: 'library', icon: BookOpen, label: 'Book Vault' },
+        { id: 'analytics', icon: BarChart, label: 'Global Stats' },
+        { id: 'settings', icon: Settings, label: 'System Prefs' },
     ] : [
-        { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
-        { id: 'library', icon: BookOpen, label: 'Explore Books' },
-        { id: 'settings', icon: Settings, label: 'Settings' },
+        { id: 'overview', icon: LayoutDashboard, label: 'My Hub' },
+        { id: 'profile', icon: Users, label: 'My Identity' },
+        { id: 'wishlist', icon: Database, label: 'Wishlist' },
+        { id: 'library', icon: BookOpen, label: 'BoiNet Explorer' },
+        { id: 'settings', icon: Settings, label: 'Preferences' },
     ];
 
     return (
@@ -184,11 +261,13 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
 
                         <div className="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-800">
                             <div className="text-right hidden sm:block">
-                                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-none">{user?.name}</p>
-                                <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase mt-0.5">{user?.userRole === Role.SuperAdmin ? 'Super Admin' : user?.userRole === Role.Admin ? 'Curator' : 'Explorer'}</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-none">{normalizedUser.name}</p>
+                                <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase mt-0.5">
+                                    {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Curator' : 'Explorer'}
+                                </p>
                             </div>
                             <img
-                                src={user?.profilePhotoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`}
+                                src={normalizedUser.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${normalizedUser.id}`}
                                 className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 object-cover"
                                 alt="Profile"
                             />
@@ -209,7 +288,9 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
                             >
                                 {activeSection === 'library' ? <BookManagement /> :
                                     activeSection === 'users' ? <UserManagement /> :
-                                        <Overview user={user} isManagement={isManagement} setActiveSection={setActiveSection} />}
+                                        activeSection === 'profile' ? <UserProfile user={user} /> :
+                                            activeSection === 'wishlist' ? <UserWishlist /> :
+                                                <Overview user={user} isManagement={isManagement} setActiveSection={setActiveSection} />}
                             </motion.div>
                         </AnimatePresence>
                     </div>
@@ -219,99 +300,157 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
     );
 }
 
-function Overview({ user, setActiveSection }: OverviewProps) {
+function Overview({ user, isManagement, setActiveSection }: OverviewProps) {
+    const displayName = user?.name ?? (user as any)?.Name ?? (user as any)?.name ?? 'User';
     return (
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight font-display">
-                    Welcome back, <span className="italic text-indigo-600 dark:text-indigo-400">{user?.name ? user.name.split(' ')[0] : 'User'}</span>
+                    Welcome back, <span className="italic text-indigo-600 dark:text-indigo-400">{displayName ? displayName.split(' ')[0] : 'User'}</span>
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Here is what is happening with BoiNet today.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard label="Active Users" value="1,280" icon={Users} trend="+12%" color="blue" />
-                <StatCard label="Book Catalog" value="48.2K" icon={BookOpen} trend="+5.4k" color="indigo" />
-                <StatCard label="System Status" value="Online" icon={Database} trend="Stable" color="blue" />
-                <StatCard label="Security" value="Active" icon={Shield} trend="Secure" color="slate" />
+                {isManagement ? (
+                    <>
+                        <StatCard label="Active Users" value="1,280" icon={Users} trend="+12%" color="blue" />
+                        <StatCard label="Book Catalog" value="48.2K" icon={BookOpen} trend="+5.4k" color="indigo" />
+                        <StatCard label="System Status" value="Online" icon={Database} trend="Stable" color="blue" />
+                        <StatCard label="Security" value="Active" icon={Shield} trend="Secure" color="slate" />
+                    </>
+                ) : (
+                    <>
+                        <StatCard label="My Readings" value="14" icon={BookOpen} trend="3 Ongoing" color="indigo" />
+                        <StatCard label="Wishlist" value="8" icon={Database} trend="New available" color="blue" />
+                        <StatCard label="Community" value="Level 4" icon={Users} trend="Active" color="slate" />
+                        <StatCard label="Status" value="Member" icon={Shield} trend="Verified" color="blue" />
+                    </>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="font-bold text-slate-800 dark:text-slate-100">Growth Analytics</h3>
-                            <select className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs outline-none text-slate-600 dark:text-slate-400">
-                                <option>Last 7 Days</option>
-                                <option>Last 30 Days</option>
-                            </select>
-                        </div>
-                        <div className="h-64 flex items-end gap-3 px-2">
-                            {Array.from({ length: 12 }).map((_, i) => (
-                                <div key={i} className="flex-1 space-y-2">
-                                    <motion.div
-                                        initial={{ height: 0 }}
-                                        animate={{ height: `${Math.random() * 80 + 20}%` }}
-                                        className="w-full bg-slate-100 dark:bg-slate-800 rounded-t-lg relative group overflow-hidden"
-                                    >
-                                        <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </motion.div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex justify-between mt-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider px-2">
-                            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                            <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-left">Operational Logs</h3>
-                            <button className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">View All</button>
-                        </div>
-                        <div className="space-y-4">
-                            {[
-                                { title: 'New books added', user: 'Admin', time: '2m ago' },
-                                { title: 'System update completed', user: 'System', time: '1h ago' },
-                                { title: 'Permissions updated', user: 'Super Admin', time: '3h ago' },
-                            ].map((log, i) => (
-                                <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500"><TrendingUp size={16} /></div>
-                                        <div className="text-left">
-                                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">{log.title}</p>
-                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mt-0.5">BY {log.user}</p>
-                                        </div>
+                    {isManagement && (
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Growth Analytics</h3>
+                                <select className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs outline-none text-slate-600 dark:text-slate-400">
+                                    <option>Last 7 Days</option>
+                                    <option>Last 30 Days</option>
+                                </select>
+                            </div>
+                            <div className="h-64 flex items-end gap-3 px-2">
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                    <div key={i} className="flex-1 space-y-2">
+                                        <motion.div
+                                            initial={{ height: 0 }}
+                                            animate={{ height: `${Math.random() * 80 + 20}%` }}
+                                            className="w-full bg-slate-100 dark:bg-slate-800 rounded-t-lg relative group overflow-hidden"
+                                        >
+                                            <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </motion.div>
                                     </div>
-                                    <span className="text-xs text-slate-400 dark:text-slate-500">{log.time}</span>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                            <div className="flex justify-between mt-4 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider px-2">
+                                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                                <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {!isManagement && (
+                        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h3 className="font-black text-2xl text-slate-950 dark:text-white uppercase tracking-tighter italic mb-8">Reading Activity</h3>
+                            <div className="space-y-6">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="flex items-center gap-6 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-slate-100">
+                                        <div className="w-16 h-20 bg-slate-100 rounded-lg overflow-hidden shrink-0 shadow-lg">
+                                            <img src={`https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=100&u=${i}`} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-slate-900 dark:text-white leading-tight">Advanced Literary Patterns Vol. {i}</h4>
+                                            <p className="text-xs text-slate-500 font-medium mt-1">Read 74% • Continue reading</p>
+                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
+                                                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${60 + i * 10}%` }} />
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="text-slate-300" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {isManagement && (
+                        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-left">Operational Logs</h3>
+                                <button className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">View All</button>
+                            </div>
+                            <div className="space-y-4">
+                                {[
+                                    { title: 'New books added', user: 'Admin', time: '2m ago' },
+                                    { title: 'System update completed', user: 'System', time: '1h ago' },
+                                    { title: 'Permissions updated', user: 'Super Admin', time: '3h ago' },
+                                ].map((log, i) => (
+                                    <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500"><TrendingUp size={16} /></div>
+                                            <div className="text-left">
+                                                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">{log.title}</p>
+                                                <p className="text-[10px] text-slate-400 dark:text-slate-50 uppercase font-bold tracking-wider mt-0.5">BY {log.user}</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs text-slate-400 dark:text-slate-500">{log.time}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-indigo-600 p-8 rounded-4xl text-white space-y-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10 blur-2xl" />
-                        <div className="relative z-10">
-                            <h3 className="text-xl font-bold">Manage Resources</h3>
-                            <p className="text-indigo-100 text-sm mt-2 opacity-80 font-medium">Quickly add or edit library items.</p>
+                    {isManagement && (
+                        <div className="bg-indigo-600 p-8 rounded-4xl text-white space-y-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10 blur-2xl" />
+                            <div className="relative z-10">
+                                <h3 className="text-xl font-bold">Manage Resources</h3>
+                                <p className="text-indigo-100 text-sm mt-2 opacity-80 font-medium">Quickly add or edit library items.</p>
+                            </div>
+                            <div className="space-y-3 relative z-10">
+                                <button
+                                    onClick={() => setActiveSection('library')}
+                                    className="w-full py-3 bg-white text-indigo-600 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/10 hover:bg-slate-50 transition-all active:scale-95"
+                                >
+                                    <Plus size={18} />
+                                    Add New Book
+                                </button>
+                                <button className="w-full py-3 bg-indigo-500 text-white border border-indigo-400 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-400 transition-all">
+                                    <TrendingUp size={18} />
+                                    System Health
+                                </button>
+                            </div>
                         </div>
-                        <div className="space-y-3 relative z-10">
+                    )}
+
+                    {!isManagement && (
+                        <div className="bg-slate-900 dark:bg-indigo-600 p-8 rounded-4xl text-white space-y-6 shadow-xl relative overflow-hidden">
+                            <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/5 rounded-full translate-y-12 translate-x-12 blur-3xl" />
+                            <div className="relative z-10">
+                                <h3 className="text-xl font-black uppercase tracking-tighter italic">Personal Reserve</h3>
+                                <p className="text-indigo-100 text-sm mt-2 opacity-80 font-medium italic">You have 12 items in your wishlist.</p>
+                            </div>
                             <button
-                                onClick={() => setActiveSection('library')}
-                                className="w-full py-3 bg-white text-indigo-600 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/10 hover:bg-slate-50 transition-all active:scale-95"
+                                onClick={() => setActiveSection('wishlist')}
+                                className="w-full py-4 bg-white text-slate-900 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-50 transition-all shadow-xl"
                             >
-                                <Plus size={18} />
-                                Add New Book
-                            </button>
-                            <button className="w-full py-3 bg-indigo-500 text-white border border-indigo-400 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-400 transition-all">
-                                <TrendingUp size={18} />
-                                System Health
+                                <Database size={18} />
+                                Access My Reserve
                             </button>
                         </div>
-                    </div>
+                    )}
 
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
                         <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-6 text-left">Recently Joined</h3>

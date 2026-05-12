@@ -1,10 +1,11 @@
 import { axiosClient } from "../Api/axiosClient";
 import type { UserDto, RoleValue } from "../types/auth";
+import { unwrap } from "../lib/api-utils";
 
 export const userService = {
     getAllUsers: async (): Promise<UserDto[]> => {
-        const response = await axiosClient.get<UserDto[]>("/user/all");
-        return response.data;
+        const response = await axiosClient.get<any>("/user/all");
+        return unwrap<UserDto[]>(response.data);
     },
 
     updateUserRole: async (userId: string, role: RoleValue) => {
