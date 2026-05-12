@@ -22,7 +22,7 @@ export const bookService = {
 
     // Create Book
     createBook: async (formData: FormData): Promise<Book> => {
-        const response = await axiosClient.post<Book>('/book/add-data', formData, {
+        const response = await axiosClient.post<Book>('/book/add-book', formData, {
             headers: {
                 "Content-Type": "multipart/form-data"
             }
