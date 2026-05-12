@@ -18,6 +18,7 @@ import ScrollToTop from './Components/shared/ScrollToTop';
 import Books from './Pages/Book';
 import { FeedbackProvider } from './Components/UI/Feedback';
 import { AxiosInterceptor } from './Components/shared/AxiosInterceptor';
+import PaymentSuccess from './Pages/PaymentSuccess';
 
 // --- Protected Route ---
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -94,6 +95,7 @@ export default function App() {
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
                 <Route path="books/:id" element={<BookDetails />} />
+                <Route path="payment-success" element={<PaymentSuccess />} />
                 <Route path="privacy" element={<Privacy />} />
                 <Route path="contact" element={<Contact />} />
               </Route>
