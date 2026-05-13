@@ -359,8 +359,6 @@ For issues and questions:
 
 ## Future Enhancements
 
-- [ ] Dark mode implementation
-- [ ] Advanced search and filtering
 - [ ] User reviews and ratings
 - [ ] Wishlist functionality
 - [ ] Social sharing features
