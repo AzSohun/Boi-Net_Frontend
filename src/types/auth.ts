@@ -51,22 +51,39 @@ export interface LoginDto {
 
 export interface UserDto {
     id: string;
+    Id?: string;
     email: string;
+    Email?: string;
     name: string;
+    Name?: string;
     profilePhotoUrl: string;
+    ProfilePhotoUrl?: string;
     profilePhotoId?: string;
+    ProfilePhotoId?: string;
     dob?: string | null;
+    Dob?: string | null;
     userRole: RoleValue;
+    UserRole?: RoleValue;
+    isBlocked?: boolean;
+    IsBlocked?: boolean;
     wishlist: Book[];
 }
 
 export interface UserProfileResponseDto {
     id: string;
+    Id?: string;
     email: string;
+    Email?: string;
     name: string;
+    Name?: string;
     profilePhotoUrl: string;
+    ProfilePhotoUrl?: string;
     dob?: string | null;
+    Dob?: string | null;
     userRole: RoleValue;
+    UserRole?: RoleValue;
+    isBlocked?: boolean;
+    IsBlocked?: boolean;
     wishlist: Book[];
 }
 

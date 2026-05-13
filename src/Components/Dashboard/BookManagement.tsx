@@ -20,8 +20,10 @@ import { bookService } from '../../Services/bookService';
 import type { Book, CreateBookFormData } from '../../types/book';
 import { useFeedback } from '../UI/Feedback';
 import { useAuth } from '../../Context/AuthContext';
+import { formatImageUrl } from '../../lib/imageUtils';
 
-import { checkRole } from '../../types/auth';
+import { Role, checkRole } from '../../types/auth';
+import { useBooks, useCreateBook, useUpdateBook, useDeleteBook } from '../../Hooks/useBooks';
 
 export default function BookManagement() {
     const { user } = useAuth();
@@ -29,15 +31,18 @@ export default function BookManagement() {
     const isAdmin = checkRole(user, 'Admin');
     const isManagement = isSuperAdmin || isAdmin;
 
-    const [books, setBooks] = useState<Book[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isDeleting, setIsDeleting] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBook, setEditingBook] = useState<Book | null>(null);
     const { showToast, confirm } = useFeedback();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+    const { data: books = [], isLoading: loading } = useBooks();
+    const createMutation = useCreateBook();
+    const updateMutation = useUpdateBook();
+    const deleteMutation = useDeleteBook();
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
     const [formData, setFormData] = useState<CreateBookFormData>({
         title: '',
@@ -52,22 +57,6 @@ export default function BookManagement() {
         isAvailable: true,
         publishDate: ''
     });
-
-    useEffect(() => {
-        fetchBooks();
-    }, []);
-
-    const fetchBooks = async () => {
-        setLoading(true);
-        try {
-            const data = await bookService.getAllBooks();
-            setBooks(Array.isArray(data) ? data : []);
-        } catch (error) {
-            console.error("Failed to fetch books", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleOpenModal = (book: Book | null = null) => {
         if (book) {
@@ -113,17 +102,7 @@ export default function BookManagement() {
         });
 
         if (isConfirmed) {
-            setIsDeleting(id);
-            try {
-                await bookService.deleteBook(id);
-                setBooks(prev => prev.filter(b => b.id !== id));
-                showToast('Book deleted successfully');
-            } catch (error) {
-                console.error("Delete failed", error);
-                showToast('Failed to delete book', 'error');
-            } finally {
-                setIsDeleting(null);
-            }
+            deleteMutation.mutate(id);
         }
     };
 
@@ -131,30 +110,25 @@ export default function BookManagement() {
         e.preventDefault();
         if (isSubmitting) return;
 
-        setIsSubmitting(true);
         const data = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
             if (value !== null && value !== undefined) {
                 if (key === 'publishDate' && !value) return;
-                data.append(key, value as any);
+                // Map to PascalCase for backend
+                let backendKey = key.charAt(0) ? key.charAt(0).toUpperCase() + key.slice(1) : key;
+                if (key === 'isbn') backendKey = 'ISBN';
+                data.append(backendKey, value as any);
             }
         });
 
-        try {
-            if (editingBook) {
-                await bookService.updateBook(editingBook.id, data);
-                showToast('Book updated successfully');
-            } else {
-                await bookService.createBook(data);
-                showToast('New book added to library');
-            }
-            fetchBooks();
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error("Submit failed", error);
-            showToast('Action failed. Please try again.', 'error');
-        } finally {
-            setIsSubmitting(false);
+        if (editingBook) {
+            updateMutation.mutate({ id: editingBook.id, formData: data }, {
+                onSuccess: () => setIsModalOpen(false)
+            });
+        } else {
+            createMutation.mutate(data, {
+                onSuccess: () => setIsModalOpen(false)
+            });
         }
     };
 
@@ -241,9 +215,9 @@ export default function BookManagement() {
                                     transition={{ delay: idx * 0.05 }}
                                     className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-900 hover:shadow-lg transition-all"
                                 >
-                                    <div className="aspect-4/5 relative bg-slate-100 dark:bg-slate-800">
+                                    <div className="aspect-[4/5] relative bg-slate-100 dark:bg-slate-800">
                                         {book.coverPhoto ? (
-                                            <img src={book.coverPhoto} alt="" className="w-full h-full object-cover" />
+                                            <img src={formatImageUrl(book.coverPhoto)} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700"><BookIcon size={48} /></div>
                                         )}
@@ -257,10 +231,10 @@ export default function BookManagement() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(book.id)}
-                                                    disabled={isDeleting === book.id}
+                                                    disabled={deleteMutation.isPending && deleteMutation.variables === book.id}
                                                     className="p-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl text-slate-600 dark:text-slate-400 hover:text-red-500 transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                                                 >
-                                                    {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                                    {(deleteMutation.isPending && deleteMutation.variables === book.id) ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                                 </button>
                                             </div>
                                         )}
@@ -283,7 +257,7 @@ export default function BookManagement() {
                             ) : (
                                 <div key={book.id} className="group border-b last:border-0 border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-all flex items-center gap-4 px-6 py-4">
                                     <div className="w-12 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                                        {book.coverPhoto && <img src={book.coverPhoto} className="w-full h-full object-cover" />}
+                                        {book.coverPhoto && <img src={formatImageUrl(book.coverPhoto)} className="w-full h-full object-cover" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate">{book.title}</h4>
@@ -307,10 +281,10 @@ export default function BookManagement() {
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(book.id)}
-                                                disabled={isDeleting === book.id}
+                                                disabled={deleteMutation.isPending && deleteMutation.variables === book.id}
                                                 className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
                                             >
-                                                {isDeleting === book.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                                {(deleteMutation.isPending && deleteMutation.variables === book.id) ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                             </button>
                                         </div>
                                     )}
@@ -324,7 +298,7 @@ export default function BookManagement() {
             {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                             <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
@@ -335,7 +309,7 @@ export default function BookManagement() {
                                 <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"><X size={20} /></button>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto">
+                            <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
                                         <FormInput label="Title" value={formData.title} required placeholder="Enter book title" onChange={(v) => setFormData({ ...formData, title: v })} />
@@ -394,7 +368,7 @@ export default function BookManagement() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="flex-2 py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-900/10 dark:shadow-none disabled:opacity-70 flex items-center justify-center gap-2"
+                                        className="flex-[2] py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-900/10 dark:shadow-none disabled:opacity-70 flex items-center justify-center gap-2"
                                     >
                                         {isSubmitting && <Loader2 size={16} className="animate-spin" />}
                                         {isSubmitting ? 'Processing...' : (editingBook ? 'Update Resource' : 'Save Library Resource')}

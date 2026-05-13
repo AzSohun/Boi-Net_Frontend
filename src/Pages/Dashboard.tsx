@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     LayoutDashboard,
@@ -22,16 +22,22 @@ import {
     Monitor,
     Loader2,
     Sparkles,
+    Camera,
+    Calendar,
+    Trash,
     type LucideIcon
 } from 'lucide-react';
+import { useAuth } from '../Context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { checkRole, type UserDto } from '../types/auth';
-import type { PurchasedBook } from '../types/checkout';
 import { CheckoutService } from '../Services/checkoutService';
-import { useAuth } from '../Context/AuthContext';
+import { userService } from '../Services/userService';
+import { formatImageUrl } from '../lib/imageUtils';
+import { useUserProfile, useUpdateProfile } from '../Hooks/useUser';
+import { useFeedback } from '../Components/UI/Feedback';
+import type { PurchasedBook } from '../types/checkout';
 import BookManagement from '../Components/Dashboard/BookManagement';
 import UserManagement from '../Components/Dashboard/UserManagement';
-
 
 type DashboardSection = 'overview' | 'users' | 'library' | 'analytics' | 'settings' | 'profile' | 'wishlist' | 'management';
 
@@ -40,11 +46,89 @@ interface UserProfileProps {
     user: UserDto | null;
 }
 
-const UserProfile = ({ user }: UserProfileProps) => {
+const UserProfile = ({ user: initialUser }: UserProfileProps) => {
+    const { showToast, confirm } = useFeedback();
+    const { clearAuth } = useAuth();
+    const navigate = useNavigate();
+
+    const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
+    const updateProfileMutation = useUpdateProfile();
+
+    // Use userProfile (fresh from API) if available, otherwise fallback to initialUser
+    const user = userProfile || initialUser;
+
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const [formData, setFormData] = useState({
+        name: user?.name || user?.Name || '',
+        dob: (user?.dob || user?.Dob || '')?.split('T')[0] ?? ''
+    });
+
+    // Sync state if userProfile changes
+    useEffect(() => {
+        if (userProfile) {
+            setFormData({
+                name: userProfile.name || userProfile.Name || '',
+                dob: (userProfile.dob || userProfile.Dob || '')?.split('T')[0] ?? ''
+            });
+        }
+    }, [userProfile]);
+
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+
     const normalized = {
-        name: user?.name ?? (user as any)?.Name ?? 'User',
-        photo: user?.profilePhotoUrl ?? (user as any)?.ProfilePhotoUrl ?? (user as any)?.profilePhotoUrl,
-        id: user?.id ?? (user as any)?.Id ?? (user as any)?.id
+        name: formData.name,
+        photo: formatImageUrl(user?.profilePhotoUrl || user?.ProfilePhotoUrl),
+        id: user?.id || user?.Id || ''
+    };
+
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setPhotoFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
+    const handleUpdate = async () => {
+        const data = new FormData();
+        data.append('Name', formData.name);
+        data.append('DOB', formData.dob);
+        if (photoFile) {
+            data.append('ProfilePhoto', photoFile);
+        }
+
+        updateProfileMutation.mutate(data, {
+            onSuccess: () => {
+                setPhotoFile(null);
+                setPreviewUrl(null);
+            }
+        });
+    };
+
+    const handleDelete = async () => {
+        const isConfirmed = await confirm({
+            title: 'Erase Identity',
+            message: 'This process is irreversible. All your assets and access will be permanently deleted from BoiNet protocols.',
+            confirmLabel: 'Erase My Data',
+            type: 'danger'
+        });
+
+        if (isConfirmed) {
+            setIsDeleting(true);
+            try {
+                await userService.deleteMe();
+                showToast('Identity erased. Returning to primary deck.', 'success');
+                setTimeout(() => {
+                    clearAuth();
+                    navigate('/');
+                }, 2000);
+            } catch (err) {
+                showToast('Deletion protocol failed.', 'error');
+                setIsDeleting(false);
+            }
+        }
     };
 
     return (
@@ -56,24 +140,69 @@ const UserProfile = ({ user }: UserProfileProps) => {
                 <div className="space-y-8">
                     <div className="space-y-4">
                         <label className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600">Universal Name</label>
-                        <input className="w-full bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 font-bold text-lg outline-none focus:border-indigo-600 transition-all" defaultValue={normalized.name} />
+                        <input
+                            className="w-full bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 font-bold text-lg outline-none focus:border-indigo-600 transition-all text-slate-900 dark:text-white"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        />
                     </div>
                     <div className="space-y-4">
-                        <label className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600">Bio / Description</label>
-                        <textarea rows={4} className="w-full bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 font-bold text-lg outline-none focus:border-indigo-600 transition-all" defaultValue="Avid reader and explorer of digital narratives." />
-                    </div>
-                </div>
-                <div className="space-y-8">
-                    <div className="flex flex-col items-center p-8 bg-indigo-50 dark:bg-indigo-500/5 rounded-3xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/50">
-                        <div className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-2xl bg-white mb-6 overflow-hidden">
-                            <img src={normalized.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${normalized.id}`} className="w-full h-full object-cover" />
+                        <label className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600">Date of Birth</label>
+                        <div className="relative">
+                            <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <input
+                                type="date"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border-4 border-slate-100 dark:border-slate-800 rounded-2xl py-4 pl-16 pr-6 font-bold text-lg outline-none focus:border-indigo-600 transition-all text-slate-900 dark:text-white"
+                                value={formData.dob}
+                                onChange={e => setFormData({ ...formData, dob: e.target.value })}
+                            />
                         </div>
-                        <button className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-slate-950 dark:hover:bg-white dark:hover:text-black transition-all">Update Avatar</button>
                     </div>
-                    <div className="p-6 bg-red-50 dark:bg-red-500/5 rounded-2xl border-2 border-red-100 dark:border-red-900/30">
-                        <h4 className="font-black text-red-600 uppercase text-xs tracking-widest mb-2">Danger Zone</h4>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase mb-4 tracking-tighter">Your data is yours. Request deletion from BoiNet protocols.</p>
-                        <button className="text-red-600 font-black text-xs uppercase underline decoration-2 underline-offset-4 hover:text-red-700 transition-colors">Request Account Deletion</button>
+
+                    <button
+                        onClick={handleUpdate}
+                        disabled={updateProfileMutation.isPending}
+                        className="w-full sm:w-auto px-12 py-5 bg-indigo-600 text-white rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] shadow-2xl shadow-indigo-600/20 hover:bg-slate-950 dark:hover:bg-white dark:hover:text-black transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                    >
+                        {updateProfileMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <Shield size={18} />}
+                        {updateProfileMutation.isPending ? 'Synchronizing...' : 'Update Protocol'}
+                    </button>
+                </div>
+
+                <div className="space-y-8">
+                    <div className="flex flex-col items-center p-12 bg-indigo-50 dark:bg-indigo-500/5 rounded-[3rem] border-4 border-dashed border-indigo-100 dark:border-indigo-900/30">
+                        <div className="w-40 h-40 rounded-full border-8 border-white dark:border-slate-800 shadow-2xl bg-white mb-8 overflow-hidden relative group">
+                            <img
+                                src={previewUrl || normalized.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${normalized.id}`}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                            <label className="absolute inset-0 bg-indigo-600/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                <Camera className="text-white" size={32} />
+                                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                            </label>
+                        </div>
+                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.4em] mb-4">Visual Identifier</p>
+                        <button
+                            onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+                            className="px-8 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-xl"
+                        >
+                            Upload Photo
+                        </button>
+                    </div>
+
+                    <div className="p-8 bg-red-50 dark:bg-red-500/5 rounded-[2.5rem] border-4 border-red-100 dark:border-red-900/20 shadow-xl shadow-red-500/5">
+                        <h4 className="font-black text-red-600 uppercase text-xs tracking-[0.2em] mb-3 flex items-center gap-2">
+                            <Trash size={14} />
+                            Terminal Action
+                        </h4>
+                        <p className="text-xs text-slate-500 font-bold mb-6 tracking-tight leading-relaxed">Identity deletion will remove all acquired assets and history from BoiNet archives permanently.</p>
+                        <button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="w-full py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            {isDeleting ? 'Eradicating...' : 'Commence Account Deletion'}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -89,7 +218,7 @@ const UserWishlist = () => (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map(i => (
                 <div key={i} className="group cursor-pointer">
-                    <div className="aspect-2/3 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden mb-4 relative shadow-xl transform transition-all group-hover:-translate-y-2 group-hover:shadow-indigo-500/20">
+                    <div className="aspect-[2/3] bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden mb-4 relative shadow-xl transform transition-all group-hover:-translate-y-2 group-hover:shadow-indigo-500/20">
                         <img src={`https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=400&u=${i}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                     </div>
                     <h3 className="font-black text-lg text-slate-950 dark:text-white uppercase leading-none tracking-tighter">The Lost Protocol {i}</h3>
@@ -158,17 +287,17 @@ const MyLibrary = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {books.map(book => (
+                    {books.map((book: any) => (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            key={book.bookId}
+                            key={book.bookId || book.BookId || book.id || book.Id}
                             className="group"
                         >
-                            <div className="aspect-2/3 bg-slate-100 dark:bg-slate-800 rounded-3xl overflow-hidden mb-6 relative shadow-xl transform transition-all group-hover:-translate-y-2 group-hover:shadow-indigo-500/20 ring-1 ring-slate-200 dark:ring-slate-800">
+                            <div className="aspect-[2/3] bg-slate-100 dark:bg-slate-800 rounded-3xl overflow-hidden mb-6 relative shadow-xl transform transition-all group-hover:-translate-y-2 group-hover:shadow-indigo-500/20 ring-1 ring-slate-200 dark:ring-slate-800">
                                 <img
-                                    src={book.coverPhoto}
-                                    alt={book.title}
+                                    src={formatImageUrl(book.coverPhoto || book.CoverPhoto || book.image || book.Image)}
+                                    alt={book.title || book.Title}
                                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
                                 />
                                 <div className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors pointer-events-none" />
@@ -180,8 +309,8 @@ const MyLibrary = () => {
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-black text-lg text-slate-950 dark:text-white uppercase leading-none tracking-tighter truncate">{book.title || (book as any).Title}</h3>
-                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest truncate">{book.author || (book as any).Author}</p>
+                                <h3 className="font-black text-lg text-slate-950 dark:text-white uppercase leading-none tracking-tighter truncate">{book.title || book.Title}</h3>
+                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest truncate">{book.author || book.Author}</p>
                             </div>
                         </motion.div>
                     ))}
@@ -199,8 +328,12 @@ interface OverviewProps {
 }
 
 export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme: (t: Theme) => void }) {
-    const { user, clearAuth } = useAuth();
+    const { user: authUser, clearAuth } = useAuth();
+    const { data: userProfile } = useUserProfile();
     const navigate = useNavigate();
+
+    const user = userProfile || authUser;
+
     const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
@@ -214,11 +347,12 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
     const isAdmin = checkRole(user, 'Admin');
     const isManagement = isSuperAdmin || isAdmin;
 
-    // Normalized user data
+    const userToUse = userProfile || authUser;
+
     const normalizedUser = {
-        name: user?.name ?? (user as any)?.Name ?? (user as any)?.name ?? 'User',
-        photo: user?.profilePhotoUrl ?? (user as any)?.ProfilePhotoUrl ?? (user as any)?.profilePhotoUrl,
-        id: user?.id ?? (user as any)?.Id ?? (user as any)?.id
+        name: userToUse?.name || userToUse?.Name || 'User',
+        photo: formatImageUrl(userToUse?.profilePhotoUrl || userToUse?.ProfilePhotoUrl),
+        id: userToUse?.id || userToUse?.Id || ''
     };
 
     const navItems = isManagement ? [
@@ -249,7 +383,7 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
                     </div>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+                <nav className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
                     <Link
                         to="/"
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100`}
@@ -372,7 +506,7 @@ export default function Dashboard({ theme, setTheme }: { theme: Theme, setTheme:
                 </header>
 
                 {/* Viewport Area */}
-                <main className="flex-1 overflow-y-auto p-8">
+                <main className="flex-1 overflow-y-auto custom-scrollbar p-8">
                     <div className="max-w-7xl mx-auto space-y-8">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -510,7 +644,7 @@ function Overview({ user, isManagement, setActiveSection }: OverviewProps) {
 
                 <div className="space-y-6">
                     {isManagement && (
-                        <div className="bg-indigo-600 p-8 rounded-4xl text-white space-y-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
+                        <div className="bg-indigo-600 p-8 rounded-[2rem] text-white space-y-6 shadow-xl shadow-indigo-200 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-10 translate-x-10 blur-2xl" />
                             <div className="relative z-10">
                                 <h3 className="text-xl font-bold">Manage Resources</h3>
@@ -533,7 +667,7 @@ function Overview({ user, isManagement, setActiveSection }: OverviewProps) {
                     )}
 
                     {!isManagement && (
-                        <div className="bg-slate-900 dark:bg-indigo-600 p-8 rounded-4xl text-white space-y-6 shadow-xl relative overflow-hidden">
+                        <div className="bg-slate-900 dark:bg-indigo-600 p-8 rounded-[2rem] text-white space-y-6 shadow-xl relative overflow-hidden">
                             <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/5 rounded-full translate-y-12 translate-x-12 blur-3xl" />
                             <div className="relative z-10">
                                 <h3 className="text-xl font-black uppercase tracking-tighter italic">Personal Reserve</h3>

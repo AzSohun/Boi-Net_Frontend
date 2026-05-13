@@ -9,8 +9,8 @@
 
 @utility custom-scrollbar {
   &::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
 
   &::-webkit-scrollbar-track {
@@ -19,18 +19,24 @@
 
   &::-webkit-scrollbar-thumb {
     background: #e2e8f0;
-    border-radius: 20px;
-    border: 1px solid transparent;
-    background-clip: padding-box;
+    /* Slate-200 */
+    border-radius: 10px;
+    transition: all 0.3s;
   }
 
   .dark &::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #1e293b;
+    /* Slate-800 */
   }
 
   &::-webkit-scrollbar-thumb:hover {
     background: #6366f1;
     /* Indigo-500 */
+  }
+
+  .dark &::-webkit-scrollbar-thumb:hover {
+    background: #4f46e5;
+    /* Indigo-600 */
   }
 }
 
@@ -42,7 +48,6 @@
     @apply custom-scrollbar;
   }
 }
-
 
 /* This allows the 'dark:' variant to work when the 'dark' class is on <html> */
 @variant dark (&:where(.dark, .dark *));

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
+    Users,
     Search,
     Trash2,
     Shield,
@@ -8,55 +9,34 @@ import {
     MoreVertical,
     UserPlus,
     Filter,
-    CheckCircle2
+    CheckCircle2,
+    Lock,
+    Unlock
 } from 'lucide-react';
 import { userService } from '../../Services/userService';
 import type { UserDto, RoleValue } from '../../types/auth';
 import { Role, checkRole } from '../../types/auth';
 import { useFeedback } from '../UI/Feedback';
 import { Loader2 } from 'lucide-react';
+import { formatImageUrl } from '../../lib/imageUtils';
+import { useAllUsers, useAdminManageUser, useDeleteUser } from '../../Hooks/useUsers';
 
 import { useAuth } from '../../Context/AuthContext';
 
 export default function UserManagement() {
     const { user: currentUser } = useAuth();
-    const [users, setUsers] = useState<UserDto[]>([]);
-    const [, setLoading] = useState(true);
-    const [isDeleting, setIsDeleting] = useState<string | null>(null);
-    const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
+    const { data: users = [], isLoading: loading } = useAllUsers();
+    const adminManageMutation = useAdminManageUser();
+    const deleteMutation = useDeleteUser();
+
     const [searchQuery, setSearchQuery] = useState('');
-    const { showToast, confirm } = useFeedback();
+    const { confirm } = useFeedback();
 
     const isSuperAdmin = checkRole(currentUser, 'SuperAdmin');
     const isAdmin = checkRole(currentUser, 'Admin');
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
-        setLoading(true);
-        try {
-            const data = await userService.getAllUsers();
-            setUsers(data);
-        } catch (error) {
-            console.error("Failed to fetch users", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRoleChange = async (userId: string, targetRole: RoleValue) => {
-        setIsUpdatingRole(userId);
-        try {
-            await userService.updateUserRole(userId, targetRole);
-            showToast(`Role updated to ${getRoleLabel(targetRole)}`);
-            fetchUsers();
-        } catch (error) {
-            showToast('Role update failed', 'error');
-        } finally {
-            setIsUpdatingRole(null);
-        }
+    const handleAdminAction = async (userId: string, targetRole: RoleValue, isBlocked: boolean) => {
+        adminManageMutation.mutate({ userId, role: String(targetRole), isBlocked });
     };
 
     const canManage = (targetUser: UserDto) => {
@@ -83,17 +63,7 @@ export default function UserManagement() {
         });
 
         if (isConfirmed) {
-            setIsDeleting(userId);
-            try {
-                await userService.deleteUser(userId);
-                setUsers(prev => prev.filter(u => u.id !== userId));
-                showToast('User deleted successfully');
-            } catch (error) {
-                console.error("Deletion failed", error);
-                showToast('Failed to delete user', 'error');
-            } finally {
-                setIsDeleting(null);
-            }
+            deleteMutation.mutate(userId);
         }
     };
 
@@ -179,7 +149,7 @@ export default function UserManagement() {
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800">
                                                     <img
-                                                        src={user.profilePhotoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                                                        src={formatImageUrl(user.profilePhotoUrl) || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
                                                         alt={user.name}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -200,9 +170,18 @@ export default function UserManagement() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
-                                                <CheckCircle2 size={14} />
-                                                Active
+                                            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${user.isBlocked ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                                                {user.isBlocked ? (
+                                                    <>
+                                                        <Lock size={14} />
+                                                        Blocked
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CheckCircle2 size={14} />
+                                                        Active
+                                                    </>
+                                                )}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right overflow-visible">
@@ -212,8 +191,8 @@ export default function UserManagement() {
                                                         <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mr-2">
                                                             {!checkRole(user, 'User') && (
                                                                 <button
-                                                                    onClick={() => handleRoleChange(user.id, Role.User)}
-                                                                    disabled={isUpdatingRole === user.id}
+                                                                    onClick={() => handleAdminAction(user.id, Role.User, user.isBlocked || false)}
+                                                                    disabled={adminManageMutation.isPending && adminManageMutation.variables?.userId === user.id}
                                                                     className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-blue-600 transition-colors"
                                                                 >
                                                                     Set User
@@ -221,21 +200,28 @@ export default function UserManagement() {
                                                             )}
                                                             {!checkRole(user, 'Admin') && (
                                                                 <button
-                                                                    onClick={() => handleRoleChange(user.id, Role.Admin)}
-                                                                    disabled={isUpdatingRole === user.id}
+                                                                    onClick={() => handleAdminAction(user.id, Role.Admin, user.isBlocked || false)}
+                                                                    disabled={adminManageMutation.isPending && adminManageMutation.variables?.userId === user.id}
                                                                     className="px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-indigo-600 transition-colors"
                                                                 >
                                                                     Set Admin
                                                                 </button>
                                                             )}
+                                                            <button
+                                                                onClick={() => handleAdminAction(user.id, user.userRole, !user.isBlocked)}
+                                                                disabled={adminManageMutation.isPending && adminManageMutation.variables?.userId === user.id}
+                                                                className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider transition-colors ${user.isBlocked ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'}`}
+                                                            >
+                                                                {user.isBlocked ? 'Unblock' : 'Block'}
+                                                            </button>
                                                         </div>
                                                         <button
                                                             onClick={() => handleDelete(user.id)}
-                                                            disabled={isDeleting === user.id}
+                                                            disabled={deleteMutation.isPending && deleteMutation.variables === user.id}
                                                             className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
                                                             title="Delete User"
                                                         >
-                                                            {isDeleting === user.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                                            {(deleteMutation.isPending && deleteMutation.variables === user.id) ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                                                         </button>
                                                     </>
                                                 ) : (
