@@ -33,7 +33,19 @@ export default function Register() {
             // Registration successful
             navigate("/login", { state: { message: "Account created successfully. Please login." } });
         } catch (err: any) {
-            setError(err.response?.data?.message || err.response?.data || "Registration failed. Please try again.");
+            // 🛠️ এখানে অবজেক্ট রেন্ডারিং এরর ফিক্স করা হয়েছে
+            const errorData = err.response?.data;
+
+            if (errorData) {
+                if (typeof errorData === 'object') {
+                    // .NET ProblemDetails বা কাস্টম অবজেক্টের ভেতরের স্ট্রিং খুঁজে বের করা
+                    setError(errorData.detail || errorData.message || errorData.title || JSON.stringify(errorData));
+                } else {
+                    setError(errorData);
+                }
+            } else {
+                setError("Registration failed. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -55,7 +67,7 @@ export default function Register() {
                             className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-xs font-bold"
                         >
                             <AlertCircle className="w-4 h-4 shrink-0" />
-                            {error}
+                            <span className="break-all">{error}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>
