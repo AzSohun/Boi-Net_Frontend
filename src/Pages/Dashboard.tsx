@@ -51,7 +51,7 @@ const UserProfile = ({ user: initialUser }: UserProfileProps) => {
     const { clearAuth } = useAuth();
     const navigate = useNavigate();
 
-    const { data: userProfile, isLoading: isFetchingProfile } = useUserProfile();
+    const { data: userProfile } = useUserProfile();
     const updateProfileMutation = useUpdateProfile();
 
     // Use userProfile (fresh from API) if available, otherwise fallback to initialUser

@@ -11,7 +11,8 @@ export default function BookDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data: rawBook, isLoading, isError } = useGetBookById(id);
+    const bookId = id ? parseInt(id, 10) : undefined;
+    const { data: rawBook, isLoading, isError } = useGetBookById(bookId!);
 
     // Handle potential API response wrapping (e.g., { data: book }) or array response
     let book = rawBook && 'data' in (rawBook as any) ? (rawBook as any).data : rawBook;

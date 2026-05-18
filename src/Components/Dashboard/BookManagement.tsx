@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     Plus,
@@ -16,13 +16,12 @@ import {
     CheckCircle2,
     AlertCircle
 } from 'lucide-react';
-import { bookService } from '../../Services/bookService';
 import type { Book, CreateBookFormData } from '../../types/book';
 import { useFeedback } from '../UI/Feedback';
 import { useAuth } from '../../Context/AuthContext';
 import { formatImageUrl } from '../../lib/imageUtils';
 
-import { Role, checkRole } from '../../types/auth';
+import { checkRole } from '../../types/auth';
 import { useBooks, useCreateBook, useUpdateBook, useDeleteBook } from '../../Hooks/useBooks';
 
 export default function BookManagement() {
@@ -34,7 +33,7 @@ export default function BookManagement() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBook, setEditingBook] = useState<Book | null>(null);
-    const { showToast, confirm } = useFeedback();
+    const { confirm } = useFeedback();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     const { data: books = [], isLoading: loading } = useBooks();

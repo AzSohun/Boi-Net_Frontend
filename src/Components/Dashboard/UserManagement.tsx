@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-    Users,
     Search,
     Trash2,
     Shield,
@@ -10,10 +9,8 @@ import {
     UserPlus,
     Filter,
     CheckCircle2,
-    Lock,
-    Unlock
+    Lock
 } from 'lucide-react';
-import { userService } from '../../Services/userService';
 import type { UserDto, RoleValue } from '../../types/auth';
 import { Role, checkRole } from '../../types/auth';
 import { useFeedback } from '../UI/Feedback';
@@ -25,7 +22,7 @@ import { useAuth } from '../../Context/AuthContext';
 
 export default function UserManagement() {
     const { user: currentUser } = useAuth();
-    const { data: users = [], isLoading: loading } = useAllUsers();
+    const { data: users = [] } = useAllUsers();
     const adminManageMutation = useAdminManageUser();
     const deleteMutation = useDeleteUser();
 
