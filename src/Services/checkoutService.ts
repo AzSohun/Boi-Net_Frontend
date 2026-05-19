@@ -4,7 +4,6 @@ import type { CreateOrderDto, OrderResponse, PaymentIntentResponse, PurchasedBoo
 
 export const CheckoutService = {
     createOrder: async (data: CreateOrderDto): Promise<OrderResponse> => {
-        // এখানেই ছিল আসল ভুলটা! এখন ঠিক রাউট বসানো হয়েছে:
         const response = await axiosClient.post<OrderResponse>('/Order/place-order', data);
         return response.data;
     },

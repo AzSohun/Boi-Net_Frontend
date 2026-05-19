@@ -33,12 +33,10 @@ export default function Register() {
             // Registration successful
             navigate("/login", { state: { message: "Account created successfully. Please login." } });
         } catch (err: any) {
-            // 🛠️ এখানে অবজেক্ট রেন্ডারিং এরর ফিক্স করা হয়েছে
             const errorData = err.response?.data;
 
             if (errorData) {
                 if (typeof errorData === 'object') {
-                    // .NET ProblemDetails বা কাস্টম অবজেক্টের ভেতরের স্ট্রিং খুঁজে বের করা
                     setError(errorData.detail || errorData.message || errorData.title || JSON.stringify(errorData));
                 } else {
                     setError(errorData);

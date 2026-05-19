@@ -1,6 +1,6 @@
 # BoiNet Frontend
 
-🚀 **Live:** https://boi-net-frontend-7d72.vercel.app/
+🚀 **Live:** https://boi-net-frontend.vercel.app/
 
 A modern React application for managing and browsing books with authentication, payments (Stripe), and community features.
 
